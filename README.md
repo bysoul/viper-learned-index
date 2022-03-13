@@ -13,7 +13,7 @@ impacts on the overall performance, respectively. According to the
 above results and analyses, we give some constructive suggestions
 on how to design a better learned index.
 
-### Authors
+### AUTHOR
 Jiake Ge, Boyu Shi, Yanfeng Chai, Yunda Guo, Yinxuan He, and Yunpeng
 Chai*. 
 
