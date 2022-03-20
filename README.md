@@ -1,6 +1,6 @@
 <h1 align="center">An In-depth Inquiry into Learned Indexes in a Practical Environment [Experiment, Analysis & Benchmark]</h1>
 
-### ABSTRACT
+### Abstract
 The learned indexes, which introduce the artificial intelligence technology into the index design, have become a very popular research direction due to their benefits on both space and time overheads. Recently, numerous updatable learned indexes have been designed to support the writing requirements in practical systems, and the source codes of many proposed learned indexes have been opened.
 However, we do not find any practical database or storage system
 that has replaced traditional indexes with the new learned indexes;
@@ -13,7 +13,11 @@ impacts on the overall performance, respectively. According to the
 above results and analyses, we give some constructive suggestions
 on how to design a better learned index.
 
-### AUTHORS
+### Authors
 Jiake Ge, Boyu Shi, Yanfeng Chai, Yunda Guo, Yinxuan He, and Yunpeng
 Chai*. 
 
+### How to run viper's benchmark for Learned Index
+1. Generate ycsb data using the benchmark/generate_ycsb.sh
+2. Set different learned indexes to test by changing index_num at benchmark/fixtures/viper_fixture.hpp:127
+3. Change path in redo.sh and execute
