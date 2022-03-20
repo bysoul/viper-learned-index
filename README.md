@@ -17,7 +17,7 @@ on how to design a better learned index.
 Jiake Ge, Boyu Shi, Yanfeng Chai, Yunda Guo, Yinxuan He, and Yunpeng
 Chai*. 
 
-### How to run viper's benchmark for Learned Index
+### How to run the benchmark for Learned Index
 1. Generate ycsb data using the benchmark/generate_ycsb.sh
 2. Set different learned indexes to test by changing index_num at benchmark/fixtures/viper_fixture.hpp:127
 3. Change path in redo.sh and execute
