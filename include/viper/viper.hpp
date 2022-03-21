@@ -694,11 +694,14 @@ namespace viper {
             map_=new index::WormCare<uint64_t>();
             std::cout<<"use wormhole as index"<<std::endl;
         }else if(index_type==14){
-            map_=new index::BwTreeCare<uint64_t>();
+            map_=new index::BTreeCare<uint64_t>();
             std::cout<<"use stx btree as index"<<std::endl;
         }else if(index_type==15){
             map_=new ArtCare<uint64_t>();
             std::cout<<"use art as index"<<std::endl;
+        }else if(index_type==16){
+            map_=new index::DummyIndex<uint64_t>(index_type);
+            std::cout<<"use lipp as index"<<std::endl;
         }
         current_block_page_ = 0;
         current_size_ = 0;

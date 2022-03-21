@@ -18,6 +18,7 @@
 #include "pgm/pgm_index_dynamic.hpp"
 #include  "rs/radix_spline.h"
 #include "rs/builder.h"
+#include "lipp/lipp_care.hpp"
 
 namespace viper::index {
     template<typename K>
@@ -153,6 +154,15 @@ namespace viper::index {
                 for (const auto& key : ks) rsb.AddKey(key);
                 rs::RadixSpline<uint64_t> rs = rsb.Finalize();
                 auto p=new RsCare<uint64_t>(rs,ks, vs);
+                const auto end = std::chrono::high_resolution_clock::now();
+                const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                hdr_record_value_atomic(bulk_hdr, duration.count());
+                return p;
+            }else if(index_type==16){
+                std::chrono::high_resolution_clock::time_point start= std::chrono::high_resolution_clock::now();
+
+                auto p=new LippCare<uint64_t>{};
+                p->bulk_load(vector);
                 const auto end = std::chrono::high_resolution_clock::now();
                 const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
                 hdr_record_value_atomic(bulk_hdr, duration.count());
