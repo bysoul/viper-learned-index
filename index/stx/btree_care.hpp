@@ -21,7 +21,7 @@ namespace viper::index {
         }
         KeyValueOffset CoreGet(const K & k) {
             typename stx::btree<K, uint64_t>::iterator i=btree.find(k);
-            return KeyValueOffset((uint64_t)*i);
+            return KeyValueOffset((uint64_t)(i->second));
         }
     };
 }
