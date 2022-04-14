@@ -409,6 +409,13 @@ namespace viper {
             ViperT &viper_;
         };
 
+        //1.1
+        class viper_iterator : public Viper< K , V >{
+        public:
+            uint32_t position;//NVM position
+            Viper<K,V> *iterator_viper;//?
+        };
+
         class Client : public ReadOnlyClient {
             friend class Viper<K, V>;
 
@@ -416,6 +423,8 @@ namespace viper {
             bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
+
+            viper_iterator get_iterator(const K &key, V *value);
 
             bool get(const K &key, V *value) const;
 
@@ -579,6 +588,8 @@ namespace viper {
             }
         };
     };
+
+
 
 
 
@@ -1506,6 +1517,30 @@ namespace viper {
             }
             if (get_value_from_offset(kv_offset, value)) {
                 return true;
+            }
+        }
+    }
+
+    //1.2
+    template<typename K, typename V>
+    viper_iterator Viper<K, V>::Client::get_iterator(const K &key, V *value) {
+
+        viper_iterator  get_viper_iterator;//初始化？
+
+
+        auto key_check_fn = [&](auto key, auto offset) {
+            if constexpr (using_fp) { return get_viper_iterator }
+            else { return get_viper_iterator; }
+        };
+
+        while (true) {
+            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
+            get_viper_iterator.position = kv_offset;//??
+            if (kv_offset.is_tombstone()) {
+                return get_viper_iterator;
+            }
+            if (get_value_from_offset(kv_offset, value)) {
+                return get_viper_iterator;
             }
         }
     }
