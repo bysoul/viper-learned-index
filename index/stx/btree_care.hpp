@@ -23,6 +23,15 @@ namespace viper::index {
             typename stx::btree<K, uint64_t>::iterator i=btree.find(k);
             return KeyValueOffset((uint64_t)(i->second));
         }
+        typename stx::btree<K, uint64_t>::iterator CoreGetIt(const K & k) {
+            typename stx::btree<K, uint64_t>::iterator i=btree.find(k);
+            return i;
+        }
+        typename stx::btree<K, uint64_t>::iterator CoreGetEnd(const K & k) {
+            typename stx::btree<K, uint64_t>::iterator i=btree.end();
+            return i;
+        }
+
     };
 }
 

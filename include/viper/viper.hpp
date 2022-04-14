@@ -409,22 +409,40 @@ namespace viper {
             ViperT &viper_;
         };
 
-        //1.1
-        class viper_iterator : public Viper< K , V >{
-        public:
-            uint32_t position;//NVM position
-            Viper<K,V> *iterator_viper;//?
-        };
+
 
         class Client : public ReadOnlyClient {
             friend class Viper<K, V>;
+
+            //1.1
+            class viper_iterator{
+            public:
+                viper_iterator(Viper<K, V>::Client &viper_client):viper_client(viper_client){
+                }
+                typename stx::btree<K, uint64_t>::iterator btree_it;
+                Viper<K, V>::Client &viper_client;
+                V operator*(){
+                    uint64_t offset=btree_it->second;
+                    V value;
+                    viper_client.get_value_from_offset(KVOffset(offset),&value);
+                    return value;
+                }
+                viper_iterator& operator++(){
+                    btree_it++;
+                    return *this;
+                }
+                viper_iterator& operator--(){
+                    btree_it--;
+                    return *this;
+                }
+            };
 
         public:
             bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
 
-            viper_iterator get_iterator(const K &key, V *value);
+            viper_iterator get_iterator(const K &key);
 
             bool get(const K &key, V *value) const;
 
@@ -467,6 +485,8 @@ namespace viper {
             enum PageStrategy : uint8_t {
                 BlockBased, DimmBased
             };
+
+
 
             PageStrategy strategy_;
 
@@ -1505,45 +1525,22 @@ namespace viper {
  */
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
-        auto key_check_fn = [&](auto key, auto offset) {
-            if constexpr (using_fp) { return this->viper_.check_key_equality(key, offset); }
-            else { return cceh::CCEH<K>::dummy_key_check(key, offset); }
-        };
-
-        while (true) {
-            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
-            if (kv_offset.is_tombstone()) {
-                return false;
-            }
-            if (get_value_from_offset(kv_offset, value)) {
-                return true;
-            }
-        }
+        typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
+        std::cout<<"AAA"<<std::endl;
+        *value=*it;
+        return true;
     }
 
     //1.2
     template<typename K, typename V>
-    viper_iterator Viper<K, V>::Client::get_iterator(const K &key, V *value) {
-
-        viper_iterator  get_viper_iterator;//初始化？
-
-
-        auto key_check_fn = [&](auto key, auto offset) {
-            if constexpr (using_fp) { return get_viper_iterator }
-            else { return get_viper_iterator; }
-        };
-
-        while (true) {
-            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
-            get_viper_iterator.position = kv_offset;//??
-            if (kv_offset.is_tombstone()) {
-                return get_viper_iterator;
-            }
-            if (get_value_from_offset(kv_offset, value)) {
-                return get_viper_iterator;
-            }
-        }
+    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
+        viper_iterator  get_viper_iterator(*this);//初始化？
+        index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);
+        typename stx::btree<K, uint64_t>::iterator it=map->CoreGetIt(((kv_bm::BMRecord<uint32_t, 2>)key).get_key());
+        get_viper_iterator.btree_it=it;
+        return get_viper_iterator;
     }
+
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value,uint32_t thread_id) {
         while (true) {
