@@ -35,6 +35,8 @@
 #include "../../index/ART/Tree.h"
 #include "../../index/ART/Key.h"
 
+#include<deque>
+
 #ifndef NDEBUG
 #define DEBUG_LOG(msg) (std::cout << msg << std::endl)
 #else
@@ -417,27 +419,73 @@ namespace viper {
             //1.1
             class viper_iterator{
             public:
+                //2.1 在迭代器中声明dq
+                deque<typename stx::btree<K, uint64_t>::iterator> iterator_deque;
+
                 viper_iterator(Viper<K, V>::Client &viper_client):viper_client(viper_client){
                 }
-                typename stx::btree<K, uint64_t>::iterator btree_it;
-                Viper<K, V>::Client &viper_client;
+                typename stx::btree<K, uint64_t>::iterator btree_it;//索引树
+                Viper<K, V>::Client &viper_client;//客户机
                 V operator*(){
-                    uint64_t offset=btree_it->second;
+                    uint64_t offset=btree_it->second;//找到本树的offset并返回？
                     V value;
                     viper_client.get_value_from_offset(KVOffset(offset),&value);
                     return value;
                 }
                 viper_iterator& operator++(){
                     btree_it++;
+                    //2.2.2右边（即尾部）插入deque
+                    iterator_deque.push_back(btree_it);
                     return *this;
                 }
                 viper_iterator& operator--(){
                     btree_it--;
+                    //2.2.3左边（即头部）插入deque
+                    iterator_deque.push_front(btree_it);
                     return *this;
                 }
+                //2.3 在析构中解析dq，判断连续，存入nvm
+                ~viper_iterator(){
+                    typename stx::btree<K, uint64_t>::iterator temp_btree;
+                    int judge=0;//判断位置是否连续
+                    while(!iterator_deque.empty()){
+                        temp_btree = iterator_deque.front();//用temp存队列头
+                        iterator_deque.pop_front();//弹出队列头
+
+                        //判断Offset(value)连续，200
+                        //如何获得offset?
+                        KVOffset temp_offset;//被弹出的节点的offset
+                        temp_offset = temp_btree->second;
+                        typename stx::btree<K, uint64_t>::iterator front_btree;//队列头
+                        front_btree = iterator_deque.front();
+                        KVOffset front_offset;//队列头的offset
+                        front_offset = front_btree->second;
+                        if(front_offset-temp_offset!=200)
+                        {
+                            judge=1;
+                            break;
+                        }
+                    }
+                    if(judge==1){//存在位置不连续的
+                        iterator_deque.push_front(temp_btree);//插入之前存入的队列头，此树节点与队列里下一个树节点不连续
+                        while(!iterator_deque.empty()){
+                            temp_btree = iterator_deque.front();
+                            //如何获得offset？
+                            KVOffset kv_offset;
+                            kv_offset = temp_btree->second;
+                            V kv_value;
+                            viper_client.get_value_from_offset(kv_offset, kv_value);
+                            put(kv_offset, kv_value);//将K和V放进NVM里
+                            remove(kv_offset);//从NVM中移除原来的
+                        }
+                    }
+                }
+
             };
 
         public:
+
+
             bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
@@ -1534,10 +1582,12 @@ namespace viper {
     //1.2
     template<typename K, typename V>
     typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
-        viper_iterator  get_viper_iterator(*this);//初始化？
-        index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);
+        viper_iterator  get_viper_iterator(*this);//this指当前对象Client
+        index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);//？？
         typename stx::btree<K, uint64_t>::iterator it=map->CoreGetIt(((kv_bm::BMRecord<uint32_t, 2>)key).get_key());
         get_viper_iterator.btree_it=it;
+        //2.2.1插入deque头结点
+        get_viper_iterator.iterator_deque.push_front(get_viper_iterator);//这句话是否无误？没有链接push_front函数
         return get_viper_iterator;
     }
 
