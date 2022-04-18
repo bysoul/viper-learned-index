@@ -416,7 +416,9 @@ namespace viper {
 
         class Client : public ReadOnlyClient {
             friend class Viper<K, V>;
+        public:
             bool put(const K &key, const V &value);
+            bool remove(const K &key);
 
             //1.1
             class viper_iterator{
@@ -478,7 +480,7 @@ namespace viper {
                             KVOffset kv_offset;
                             kv_offset = KVOffset(temp_btree->second);
                             V kv_value;
-                            *kv_value = *temp_btree;
+                            kv_value = *temp_btree;
 
                             put(kv_offset, kv_value);//将K和V放进NVM里
                             remove(kv_offset);//从NVM中移除原来的
@@ -491,7 +493,7 @@ namespace viper {
         public:
 
 
-            bool put(const K &key, const V &value);
+            //bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
 
@@ -513,7 +515,7 @@ namespace viper {
 
             // xindex end
 
-            bool remove(const K &key);
+            //bool remove(const K &key);
 
             ~Client();
 
