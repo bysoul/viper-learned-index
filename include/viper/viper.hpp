@@ -481,9 +481,9 @@ namespace viper {
                             viper_client.get_value_from_offset(kv_offset,&kv_value);
 
                             viper_client.put(kv_offset,kv_value);
-                                    //put(kv_offset, kv_value);//将K和V放进NVM里
+                                    //将K和V放进NVM里
                             viper_client.remove(kv_offset);
-                                    //remove(kv_offset);//从NVM中移除原来的
+                                    //从NVM中移除原来的
                         }
                     }
                 }
@@ -495,7 +495,7 @@ namespace viper {
 
         public:
 
-            bool put(const K &key, const V &value);
+            inline bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
 
@@ -517,7 +517,7 @@ namespace viper {
 
             // xindex end
 
-            bool remove(const K &key);
+            inline bool remove(const K &key);
 
             ~Client();
 
