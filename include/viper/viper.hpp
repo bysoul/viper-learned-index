@@ -457,11 +457,13 @@ namespace viper {
                         //如何获得offset?
                         KVOffset temp_offset;//被弹出的节点的offset
                         temp_offset = temp_btree->second;
+                        offset_size_t temp_offset_position = temp_offset.get_offset();
                         typename stx::btree<K, uint64_t>::iterator front_btree;//队列头
                         front_btree = iterator_deque.front();
                         KVOffset front_offset;//队列头的offset
                         front_offset = front_btree->second;
-                        if(front_offset-temp_offset!=200)
+                        offset_size_t front_offset_position = front_offset.get_offset();
+                        if(front_offset_position-temp_offset_position!=200)
                         {
                             judge=1;
                             break;
