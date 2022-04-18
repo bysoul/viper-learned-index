@@ -1574,7 +1574,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"AAA"<<std::endl;
+        std::cout<<"BBB"<<std::endl;
         *value=*it;
         return true;
     }
