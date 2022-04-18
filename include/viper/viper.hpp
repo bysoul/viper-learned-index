@@ -36,6 +36,7 @@
 #include "../../index/ART/Key.h"
 
 #include<deque>
+using namespace std;
 
 #ifndef NDEBUG
 #define DEBUG_LOG(msg) (std::cout << msg << std::endl)
@@ -420,7 +421,7 @@ namespace viper {
             class viper_iterator{
             public:
                 //2.1 在迭代器中声明dq
-                deque<typename stx::btree<K, uint64_t>::iterator> iterator_deque;
+                std::deque<typename stx::btree<K, uint64_t>::iterator> iterator_deque;
 
                 viper_iterator(Viper<K, V>::Client &viper_client):viper_client(viper_client){
                 }
@@ -474,7 +475,7 @@ namespace viper {
                             KVOffset kv_offset;
                             kv_offset = temp_btree->second;
                             V kv_value;
-                            viper_client.get_value_from_offset(kv_offset, kv_value);
+                            viper_client.get_value_from_offset(KVOffset(kv_offset), kv_value);
                             put(kv_offset, kv_value);//将K和V放进NVM里
                             remove(kv_offset);//从NVM中移除原来的
                         }
