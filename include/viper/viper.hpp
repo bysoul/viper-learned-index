@@ -480,9 +480,9 @@ namespace viper {
                             V kv_value;
                             viper_client.get_value_from_offset(kv_offset,&kv_value);
 
-                            bool put = viper_client.put(kv_offset,kv_value);
+                            viper_client.put(kv_offset,kv_value);
                                     //put(kv_offset, kv_value);//将K和V放进NVM里
-                            bool remove = viper_client.remove(kv_offset);
+                            viper_client.remove(kv_offset);
                                     //remove(kv_offset);//从NVM中移除原来的
                         }
                     }
