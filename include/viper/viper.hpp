@@ -494,6 +494,7 @@ namespace viper {
 
 
         public:
+            inline bool put(K &key, V &value);
 
             inline bool put(const K &key, const V &value);
 
@@ -1564,6 +1565,12 @@ namespace viper {
  * Returns true if the item in new, i.e., the key was not present in Viper,
  * or false if it replaces an existing value.
  */
+
+    template<typename K, typename V>
+    inline bool Viper<K, V>::Client::put(K &key, V &value) {
+        return put(key, value, true);
+    }
+
     template<typename K, typename V>
     bool Viper<K, V>::Client::put(const K &key, const V &value) {
         return put(key, value, true);
