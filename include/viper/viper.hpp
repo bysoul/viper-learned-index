@@ -416,59 +416,7 @@ namespace viper {
 
         class Client : public ReadOnlyClient {
             friend class Viper<K, V>;
-
-
-
-        public:
-
-
             bool put(const K &key, const V &value);
-
-            bool get(const K &key, V *value);
-
-            viper_iterator get_iterator(const K &key);
-
-            bool get(const K &key, V *value) const;
-
-            template<typename UpdateFn>
-            bool update(const K &key, UpdateFn update_fn);
-
-            // xindex start
-
-            bool put(const K &key, const V &value,uint32_t thread_id);
-
-            bool get(const K &key, V *value,uint32_t thread_id);
-
-            template<typename UpdateFn>
-            bool update(const K &key, UpdateFn update_fn,uint32_t thread_id);
-
-            // xindex end
-
-            bool remove(const K &key);
-
-            ~Client();
-
-            Client(ViperT &viper);
-
-            bool put(const K &key, const V &value, bool delete_old);
-
-            bool put(const K &key, const V &value, bool delete_old,uint32_t thread_id);
-
-            inline void update_access_information();
-
-            inline void update_var_size_page_information();
-
-            inline bool get_value_from_offset(KVOffset offset, V *value);
-
-            inline void info_sync(bool force = false);
-
-            void free_occupied_slot(const KVOffset offset_to_delete, const K &key, const bool delete_offset = false);
-
-            void invalidate_record(VPage *v_page, const data_offset_size_t data_offset);
-
-            enum PageStrategy : uint8_t {
-                BlockBased, DimmBased
-            };
 
             //1.1
             class viper_iterator{
@@ -538,6 +486,57 @@ namespace viper {
                     }
                 }
 
+            };
+
+        public:
+
+
+            bool put(const K &key, const V &value);
+
+            bool get(const K &key, V *value);
+
+            viper_iterator get_iterator(const K &key);
+
+            bool get(const K &key, V *value) const;
+
+            template<typename UpdateFn>
+            bool update(const K &key, UpdateFn update_fn);
+
+            // xindex start
+
+            bool put(const K &key, const V &value,uint32_t thread_id);
+
+            bool get(const K &key, V *value,uint32_t thread_id);
+
+            template<typename UpdateFn>
+            bool update(const K &key, UpdateFn update_fn,uint32_t thread_id);
+
+            // xindex end
+
+            bool remove(const K &key);
+
+            ~Client();
+
+            Client(ViperT &viper);
+
+            bool put(const K &key, const V &value, bool delete_old);
+
+            bool put(const K &key, const V &value, bool delete_old,uint32_t thread_id);
+
+            inline void update_access_information();
+
+            inline void update_var_size_page_information();
+
+            inline bool get_value_from_offset(KVOffset offset, V *value);
+
+            inline void info_sync(bool force = false);
+
+            void free_occupied_slot(const KVOffset offset_to_delete, const K &key, const bool delete_offset = false);
+
+            void invalidate_record(VPage *v_page, const data_offset_size_t data_offset);
+
+            enum PageStrategy : uint8_t {
+                BlockBased, DimmBased
             };
 
 
