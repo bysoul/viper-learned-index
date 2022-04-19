@@ -1613,8 +1613,9 @@ namespace viper {
         typename stx::btree<K, uint64_t>::iterator it=map->CoreGetIt(((kv_bm::BMRecord<uint32_t, 2>)key).get_key());
         get_viper_iterator.btree_it=it;
         //2.2.1插入deque头结点
-        get_viper_iterator.iterator_deque.push_front(it);//这句话是否无误？没有链接push_front函数
-        cout<<get_viper_iterator.iterator_deque.front();
+        get_viper_iterator.iterator_deque.emplace_front(it);//这句话是否无误？没有链接push_front函数
+        cout<<get_viper_iterator.iterator_deque.front()<<endl;
+        cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
         return get_viper_iterator;
     }
 
