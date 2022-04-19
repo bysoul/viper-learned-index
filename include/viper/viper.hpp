@@ -474,6 +474,7 @@ namespace viper {
                         iterator_deque.push_front(temp_btree);//插入之前存入的队列头，此树节点与队列里下一个树节点不连续
                         while(!iterator_deque.empty()){
                             temp_btree = iterator_deque.front();
+                            iterator_deque.pop_front();
                             //如何获得offset？
                             K kv_key = temp_btree.key();
                             KVOffset kv_offset;
