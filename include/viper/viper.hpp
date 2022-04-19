@@ -451,6 +451,7 @@ namespace viper {
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     int judge=0;//判断位置是否连续
                     while(!iterator_deque.empty()){
+                        cout<<"!iterator_deque.empty()";
                         temp_btree = iterator_deque.front();//用temp存队列头
                         iterator_deque.pop_front();//弹出队列头
 
@@ -470,9 +471,12 @@ namespace viper {
                             break;
                         }
                     }
+                    cout<<endl;
+                    cout<<"judge="<<judge<<endl;
                     if(judge==1){//存在位置不连续的
                         iterator_deque.push_front(temp_btree);//插入之前存入的队列头，此树节点与队列里下一个树节点不连续
                         while(!iterator_deque.empty()){
+                            cout<<"!iterator_deque.empty()";
                             temp_btree = iterator_deque.front();
                             iterator_deque.pop_front();
                             //如何获得offset？
@@ -487,6 +491,8 @@ namespace viper {
                             viper_client.remove(kv_key);
                                     //从NVM中移除原来的
                         }
+                        cout<<endl;
+                        cout<<"end!";
                     }
                 }
 
