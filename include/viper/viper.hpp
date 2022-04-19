@@ -497,9 +497,9 @@ namespace viper {
                             viper_client.remove(kv_key);
                                     //从NVM中移除原来的
                         }
-                        cout<<endl;
-                        cout<<"end!";
+
                     }
+                    cout<<"end!"<<endl;
                 }
 
             };
