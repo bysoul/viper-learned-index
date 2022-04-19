@@ -448,6 +448,7 @@ namespace viper {
                 }
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator(){
+                    cout<<"~viper_iterator"<<endl;
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     int judge=0;//判断位置是否连续
                     while(!iterator_deque.empty()){
