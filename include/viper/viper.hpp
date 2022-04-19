@@ -451,6 +451,7 @@ namespace viper {
                     cout<<"~viper_iterator"<<endl;
                     //cout<<iterator_deque.front()<<endl;
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
+                    cout<<"empty:"<<iterator_deque.empty()<<endl;
                     int judge=0;//判断位置是否连续
                     while(!iterator_deque.empty()){
                         cout<<"!iterator_deque.empty()";
@@ -1600,7 +1601,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"CCC"<<std::endl;
+        std::cout<<"DDD"<<std::endl;
         *value=*it;
         return true;
     }
