@@ -25,9 +25,10 @@ namespace viper::index {
         }
         void bulk_load(std::vector<std::pair<uint64_t, uint64_t>> * vector) {
             map = new LIPP<K, uint64_t>{};
-            map->bulk_load(vector->data(), vector->size());
+            //map->bulk_load(vector->data(), vector->size());
             t= new std::unordered_map<K, uint64_t>();
             for(auto &i:(*vector)){
+                map->insert(i.first,i.second);
                 t->insert(i);
             }
             return;
