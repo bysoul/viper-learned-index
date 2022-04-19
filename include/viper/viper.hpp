@@ -453,7 +453,7 @@ namespace viper {
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     cout<<"empty:"<<iterator_deque.empty()<<endl;
                     int judge=0;//判断位置是否连续
-                    while(!iterator_deque.empty()){
+                    while(iterator_deque.empty()!=1){
                         cout<<"!iterator_deque.empty()";
                         temp_btree = iterator_deque.front();//用temp存队列头
                         iterator_deque.pop_front();//弹出队列头
@@ -1601,7 +1601,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"AAA"<<std::endl;
+        std::cout<<"bbb"<<std::endl;
         *value=*it;
         return true;
     }
