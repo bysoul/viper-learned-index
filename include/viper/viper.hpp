@@ -1613,6 +1613,7 @@ namespace viper {
         get_viper_iterator.btree_it=it;
         //2.2.1插入deque头结点
         get_viper_iterator.iterator_deque.push_front(it);//这句话是否无误？没有链接push_front函数
+        cout<<get_viper_iterator.iterator_deque.front();
         return get_viper_iterator;
     }
 
