@@ -455,6 +455,8 @@ namespace viper {
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     cout<<"size:"<<iterator_deque.size()<<endl;
                     int judge=0;//判断位置是否连续
+                    temp_btree = iterator_deque.front();//用temp存队列头
+                    iterator_deque.pop_front();//弹出队列头
                     while(iterator_deque.size()!=0){
                         cout<<"!iterator_deque.empty()1"<<endl;
                         temp_btree = iterator_deque.front();//用temp存队列头
@@ -472,6 +474,7 @@ namespace viper {
                         typename stx::btree<K, uint64_t>::iterator front_btree;//队列头
                         front_btree = iterator_deque.front();
                         cout<<"5"<<endl;
+
                         KVOffset front_offset;//队列头的offset
                         front_offset = KVOffset(front_btree->second);
                         cout<<"6"<<endl;
