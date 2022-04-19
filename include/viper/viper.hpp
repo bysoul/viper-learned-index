@@ -475,7 +475,7 @@ namespace viper {
                         while(!iterator_deque.empty()){
                             temp_btree = iterator_deque.front();
                             //如何获得offset？
-                            K kv_key = temp_btree->first;
+                            K kv_key = temp_btree.key();
                             KVOffset kv_offset;
                             kv_offset = KVOffset(temp_btree->second);
                             V kv_value;
