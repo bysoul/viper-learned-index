@@ -438,12 +438,14 @@ namespace viper {
                     btree_it++;
                     //2.2.2右边（即尾部）插入deque
                     iterator_deque.push_back(btree_it);
+                    cout<<"size:"<<iterator_deque.size()<<endl;
                     return *this;
                 }
                 viper_iterator& operator--(){
                     btree_it--;
                     //2.2.3左边（即头部）插入deque
                     iterator_deque.push_front(btree_it);
+                    cout<<"size:"<<iterator_deque.size()<<endl;
                     return *this;
                 }
                 //2.3 在析构中解析dq，判断连续，存入nvm
@@ -453,7 +455,7 @@ namespace viper {
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     cout<<"empty:"<<iterator_deque.empty()<<endl;
                     int judge=0;//判断位置是否连续
-                    while(iterator_deque.empty()==false){
+                    while(iterator_deque.size()!=0){
                         cout<<"!iterator_deque.empty()";
                         temp_btree = iterator_deque.front();//用temp存队列头
                         iterator_deque.pop_front();//弹出队列头
