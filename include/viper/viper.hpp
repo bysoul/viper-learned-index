@@ -453,7 +453,7 @@ namespace viper {
                     cout<<"~viper_iterator"<<endl;
                     //cout<<iterator_deque.front()<<endl;
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
-                    cout<<"empty:"<<iterator_deque.empty()<<endl;
+                    cout<<"size:"<<iterator_deque.size()<<endl;
                     int judge=0;//判断位置是否连续
                     while(iterator_deque.size()!=0){
                         cout<<"!iterator_deque.empty()";
