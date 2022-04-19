@@ -449,7 +449,7 @@ namespace viper {
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator(){
                     cout<<"~viper_iterator"<<endl;
-                    cout<<iterator_deque.front()<<endl;
+                    //cout<<iterator_deque.front()<<endl;
                     typename stx::btree<K, uint64_t>::iterator temp_btree;
                     int judge=0;//判断位置是否连续
                     while(!iterator_deque.empty()){
@@ -1600,7 +1600,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"BBB"<<std::endl;
+        std::cout<<"CCC"<<std::endl;
         *value=*it;
         return true;
     }
@@ -1614,7 +1614,7 @@ namespace viper {
         get_viper_iterator.btree_it=it;
         //2.2.1插入deque头结点
         get_viper_iterator.iterator_deque.emplace_front(it);//这句话是否无误？没有链接push_front函数
-        cout<<get_viper_iterator.iterator_deque.front()<<endl;
+        //cout<<get_viper_iterator.iterator_deque.front()<<endl;
         cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
         return get_viper_iterator;
     }
