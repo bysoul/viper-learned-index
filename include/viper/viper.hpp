@@ -473,6 +473,7 @@ namespace viper {
                         if(front_offset_position-temp_offset_position!=200)
                         {
                             judge=1;
+                            cout<<judge<<endl;
                             break;
                         }
                     }
