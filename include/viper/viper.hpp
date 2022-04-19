@@ -458,24 +458,32 @@ namespace viper {
                     while(iterator_deque.size()!=0){
                         cout<<"!iterator_deque.empty()1"<<endl;
                         temp_btree = iterator_deque.front();//用temp存队列头
+                        cout<<"1"<<endl;
                         iterator_deque.pop_front();//弹出队列头
+                        cout<<"2"<<endl;
 
                         //判断Offset(value)连续，200
                         //如何获得offset?
                         KVOffset temp_offset;//被弹出的节点的offset
                         temp_offset = KVOffset(temp_btree->second);
+                        cout<<"3"<<endl;
                         offset_size_t temp_offset_position = temp_offset.get_offset();
+                        cout<<"4"<<endl;
                         typename stx::btree<K, uint64_t>::iterator front_btree;//队列头
                         front_btree = iterator_deque.front();
+                        cout<<"5"<<endl;
                         KVOffset front_offset;//队列头的offset
                         front_offset = KVOffset(front_btree->second);
+                        cout<<"6"<<endl;
                         offset_size_t front_offset_position = front_offset.get_offset();
+                        cout<<"7"<<endl;
                         if(front_offset_position-temp_offset_position!=200)
                         {
                             judge=1;
                             cout<<judge<<endl;
                             break;
                         }
+                        cout<<"8"<<endl;
                     }
                     cout<<endl;
                     cout<<"judge="<<judge<<endl;
@@ -484,17 +492,24 @@ namespace viper {
                         while(!iterator_deque.empty()){
                             cout<<"!iterator_deque.empty()2"<<endl;
                             temp_btree = iterator_deque.front();
+                            cout<<"1"<<endl;
                             iterator_deque.pop_front();
+                            cout<<"2"<<endl;
                             //如何获得offset？
                             K kv_key = temp_btree.key();
+                            cout<<"3"<<endl;
                             KVOffset kv_offset;
                             kv_offset = KVOffset(temp_btree->second);
+                            cout<<"4"<<endl;
                             V kv_value;
                             viper_client.get_value_from_offset(kv_offset,&kv_value);
+                            cout<<"5"<<endl;
 
                             viper_client.put(kv_key,kv_value);
+                            cout<<"6"<<endl;
                                     //将K和V放进NVM里
                             viper_client.remove(kv_key);
+                            cout<<"7"<<endl;
                                     //从NVM中移除原来的
                         }
 
@@ -1604,7 +1619,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"bbb"<<std::endl;
+        std::cout<<"CCC"<<std::endl;
         *value=*it;
         return true;
     }
