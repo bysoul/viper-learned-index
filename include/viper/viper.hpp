@@ -456,7 +456,7 @@ namespace viper {
                     cout<<"size:"<<iterator_deque.size()<<endl;
                     int judge=0;//判断位置是否连续
                     while(iterator_deque.size()!=0){
-                        cout<<"!iterator_deque.empty()";
+                        cout<<"!iterator_deque.empty()1"<<endl;
                         temp_btree = iterator_deque.front();//用temp存队列头
                         iterator_deque.pop_front();//弹出队列头
 
@@ -481,7 +481,7 @@ namespace viper {
                     if(judge==1){//存在位置不连续的
                         iterator_deque.push_front(temp_btree);//插入之前存入的队列头，此树节点与队列里下一个树节点不连续
                         while(!iterator_deque.empty()){
-                            cout<<"!iterator_deque.empty()";
+                            cout<<"!iterator_deque.empty()2"<<endl;
                             temp_btree = iterator_deque.front();
                             iterator_deque.pop_front();
                             //如何获得offset？
