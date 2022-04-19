@@ -1601,7 +1601,7 @@ namespace viper {
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"DDD"<<std::endl;
+        std::cout<<"AAA"<<std::endl;
         *value=*it;
         return true;
     }
@@ -1610,11 +1610,12 @@ namespace viper {
     template<typename K, typename V>
     typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
         viper_iterator  get_viper_iterator(*this);//this指当前对象Client
+        cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
         index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);//？？
         typename stx::btree<K, uint64_t>::iterator it=map->CoreGetIt(((kv_bm::BMRecord<uint32_t, 2>)key).get_key());
         get_viper_iterator.btree_it=it;
         //2.2.1插入deque头结点
-        get_viper_iterator.iterator_deque.emplace_front(it);//这句话是否无误？没有链接push_front函数
+        get_viper_iterator.iterator_deque.push_back(it);
         //cout<<get_viper_iterator.iterator_deque.front()<<endl;
         cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
         return get_viper_iterator;
