@@ -475,14 +475,15 @@ namespace viper {
                         while(!iterator_deque.empty()){
                             temp_btree = iterator_deque.front();
                             //如何获得offset？
+                            K kv_key = temp_btree->first;
                             KVOffset kv_offset;
                             kv_offset = KVOffset(temp_btree->second);
                             V kv_value;
                             viper_client.get_value_from_offset(kv_offset,&kv_value);
 
-                            viper_client.put(kv_offset,kv_value);
+                            viper_client.put(kv_key,kv_value);
                                     //将K和V放进NVM里
-                            viper_client.remove(kv_offset);
+                            viper_client.remove(kv_key);
                                     //从NVM中移除原来的
                         }
                     }
