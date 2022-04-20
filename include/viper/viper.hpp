@@ -425,19 +425,28 @@ namespace viper {
             class viper_iterator{
             public:
                 //2.1 在迭代器中声明dq
-                std::deque<typename stx::btree<K, uint64_t>::iterator> iterator_deque;
-
                 viper_iterator(Viper<K, V>::Client &viper_client):viper_client(viper_client){
+                    //rand=std::rand();
+                    //cout<<"rand: "<<rand<<endl;
                 }
-                typename stx::btree<K, uint64_t>::iterator btree_it;//索引树
+                std::deque<stx::btree<uint64_t, uint64_t>::iterator> iterator_deque;
+                stx::btree<uint64_t , uint64_t>::iterator btree_it;//索引树
                 Viper<K, V>::Client &viper_client;//客户机
+                //uint32_t rand=0;
                 V operator*(){
+                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
+                    assert(btree_it!=map->CoreGetEnd());
                     uint64_t offset=btree_it->second;//找到本树的offset并返回？
+                    //std::cout<<"value: "<<offset<<std::endl;
                     V value;
                     viper_client.get_value_from_offset(KVOffset(offset),&value);
                     return value;
                 }
                 viper_iterator& operator++(){
+                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
+                    if(btree_it==map->CoreGetEnd()){
+                        return *this;
+                    }
                     btree_it++;
                     //2.2.2右边（即尾部）插入deque
                     iterator_deque.push_back(btree_it);
@@ -445,18 +454,35 @@ namespace viper {
                     return *this;
                 }
                 viper_iterator& operator--(){
+                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
+                    if(btree_it==map->CoreGetBegin()){
+                        return *this;
+                    }
                     btree_it--;
                     //2.2.3左边（即头部）插入deque
                     iterator_deque.push_front(btree_it);
                     cout<<"size:"<<iterator_deque.size()<<endl;
                     return *this;
                 }
+                bool operator==(const viper_iterator &other)
+                {
+                    return this->btree_it==other.btree_it;
+                }
+
+                bool operator!=(const viper_iterator &other)
+                {
+                    return !(this->btree_it==other.btree_it);
+                }
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator(){
                     cout<<"~viper_iterator"<<endl;
+                    //cout<<"~rand: "<<rand<<endl;
+                    if(iterator_deque.size()==0){
+                        return;
+                    }
                     //cout<<iterator_deque.front()<<endl;
-                    typename stx::btree<K, uint64_t>::iterator temp_btree;
-                    cout<<"size:"<<iterator_deque.size()<<endl;
+                    stx::btree<uint64_t , uint64_t>::iterator temp_btree;
+                    cout<<"iterator_deque size:"<<iterator_deque.size()<<endl;
                     int judge=0;//判断位置是否连续
                     temp_btree = iterator_deque.front();//用temp存队列头
                     iterator_deque.pop_front();//弹出队列头
@@ -474,7 +500,7 @@ namespace viper {
                         //cout<<"3"<<endl;
                         offset_size_t temp_offset_position = temp_offset.get_offset();
                         //cout<<"4"<<endl;
-                        typename stx::btree<K, uint64_t>::iterator front_btree;//队列头
+                        stx::btree<uint64_t , uint64_t>::iterator front_btree;//队列头
                         front_btree = iterator_deque.front();
                         //cout<<"5"<<endl;
 
@@ -536,6 +562,8 @@ namespace viper {
             bool get(const K &key, V *value);
 
             viper_iterator get_iterator(const K &key);
+            viper_iterator get_end();
+            viper_iterator get_begin();
 
             bool get(const K &key, V *value) const;
 
@@ -1624,22 +1652,23 @@ namespace viper {
  */
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
-        index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);
+        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
         typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"CCC"<<std::endl;
+        std::cout<<"AAA"<<std::endl;
         *value=*it;
-        typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
+        //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
-        while(temp!=map.end()){
-            temp++;//用Temp向右遍历
+        while(it!=get_end()){
+            ++it;//用Temp向右遍历
         }
 
-        temp = it.btree_it;//用temp定位it
+        std::cout<<"BBB"<<std::endl;
+        //temp = it.btree_it;//用temp定位it
 
-        while(temp!=map.end()){
-            temp--;//用Temp向左遍历
+        while(it!=get_begin()){
+            --it;//用Temp向右遍历
         }
-
+        std::cout<<"CCC"<<std::endl;
         return true;
     }
 
@@ -1648,14 +1677,31 @@ namespace viper {
     typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
         viper_iterator  get_viper_iterator(*this);//this指当前对象Client
         cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
-        index::BTreeCare<K> *map=reinterpret_cast<index::BTreeCare<K> *>(this->viper_.map_);//？？
-        typename stx::btree<K, uint64_t>::iterator it=map->CoreGetIt(((kv_bm::BMRecord<uint32_t, 2>)key).get_key());
+        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);//？？
+        uint64_t k=((kv_bm::BMRecord<uint32_t, 2>)key).get_key();
+        stx::btree<uint64_t , uint64_t>::iterator it=map->CoreGetIt(k);
         get_viper_iterator.btree_it=it;
         //2.2.1插入deque头结点
         get_viper_iterator.iterator_deque.push_back(it);
         //cout<<get_viper_iterator.iterator_deque.front()<<endl;
         cout<<"size"<<get_viper_iterator.iterator_deque.size()<<endl;
         return get_viper_iterator;
+    }
+    template<typename K, typename V>
+    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_end() {
+        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
+        auto it=map->CoreGetEnd();
+        viper_iterator ret(*this);
+        ret.btree_it=it;
+        return ret;
+    }
+    template<typename K, typename V>
+    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_begin() {
+        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
+        auto it=map->CoreGetBegin();
+        viper_iterator ret(*this);
+        ret.btree_it=it;
+        return ret;
     }
 
     template<typename K, typename V>
