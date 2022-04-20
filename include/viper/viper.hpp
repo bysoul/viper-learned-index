@@ -543,10 +543,10 @@ namespace viper {
                         //cout << "~i-1: " << KVOffset(prev->it->second).page_number << endl;
                         if (KVOffset(i->it->second).block_number == KVOffset(prev->it->second).block_number
                             && difference > 1) {
-                            cout << "~difference flag: " << difference << endl;
-                            cout << "~difference flag: " << count << endl;
-                            cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;
-                            cout << "~difference flag: " << KVOffset(prev->it->second).get_offset() << endl;
+                            //cout << "~difference flag: " << difference << endl;
+                            //cout << "~difference flag: " << count << endl;
+                            //cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;
+                            //cout << "~difference flag: " << KVOffset(prev->it->second).get_offset() << endl;
                             flag = true;
                             break;
                         }
