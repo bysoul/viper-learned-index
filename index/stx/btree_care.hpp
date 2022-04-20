@@ -12,28 +12,35 @@ namespace viper::index {
     template<typename K>
     class BTreeCare :public BaseIndex<K>{
     public:
-        stx::btree<uint64_t, uint64_t> btree;
+        std::map<uint64_t, uint64_t> btree;
         BTreeCare(){
         }
-        KeyValueOffset CoreInsert(const K & k, KeyValueOffset o) {
-            btree.insert(std::pair<K,uint64_t>(k,o.get_offset()));
-            typename stx::btree<K, uint64_t>::iterator i=btree.find(k);
+        KeyValueOffset CoreInsert(const uint64_t &k, KeyValueOffset o) {
+            typename std::map<uint64_t, uint64_t>::iterator i=btree.find(k);
+            if(i==btree.end()){
+                btree.insert(std::pair<uint64_t,uint64_t>(k,o.get_offset()));
+            }else{
+                i->second=o.get_offset();
+            }
+            //std::cout<<"CoreInsert key :"<<k<<" value :"<<o.get_offset()<<std::endl;
+            //typename std::map<uint64_t, uint64_t>::iterator ii=btree.find(k);
+            //std::cout<<"CoreInsert key :"<<ii->first<<" value :"<<ii->second<<std::endl;
             return KeyValueOffset();
         }
         KeyValueOffset CoreGet(const K & k) {
-            typename stx::btree<K, uint64_t>::iterator i=btree.find(k);
+            typename std::map<uint64_t, uint64_t>::iterator i=btree.find(k);
             return KeyValueOffset((uint64_t)(i->second));
         }
-        typename stx::btree<uint64_t, uint64_t>::iterator CoreGetIt(const uint64_t & k) {
-            typename stx::btree<uint64_t, uint64_t>::iterator i=btree.find(k);
+        typename std::map<uint64_t, uint64_t>::iterator CoreGetIt(const uint64_t & k) {
+            typename std::map<uint64_t, uint64_t>::iterator i=btree.find(k);
             return i;
         }
-        typename stx::btree<K, uint64_t>::iterator CoreGetEnd() {
-            typename stx::btree<K, uint64_t>::iterator i=btree.end();
+        typename std::map<K, uint64_t>::iterator CoreGetEnd() {
+            typename std::map<K, uint64_t>::iterator i=btree.end();
             return i;
         }
-        typename stx::btree<K, uint64_t>::iterator CoreGetBegin() {
-            typename stx::btree<K, uint64_t>::iterator i=btree.begin();
+        typename std::map<K, uint64_t>::iterator CoreGetBegin() {
+            typename std::map<K, uint64_t>::iterator i=btree.begin();
             return i;
         }
 

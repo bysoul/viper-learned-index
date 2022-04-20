@@ -20,9 +20,9 @@ namespace viper::index {
         union {
             offset_size_t offset;
             struct {
-                block_size_t block_number: 45;
-                page_size_t page_number: 3;
                 data_offset_size_t data_offset: 16;
+                page_size_t page_number: 3;
+                block_size_t block_number: 45;
             };
         };
 

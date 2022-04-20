@@ -37,8 +37,8 @@
 
 #include<map>
 #include<deque>
-using namespace std;
 
+using namespace std;
 
 
 #ifndef NDEBUG
@@ -358,7 +358,7 @@ namespace viper {
         static const_ptr_type to_ptr_type(const type &x) { return &x; }
     };
 
-    static void * pv =nullptr;
+    static void *pv = nullptr;
 
     template<typename K, typename V>
     class Viper {
@@ -372,8 +372,9 @@ namespace viper {
 
 
     public:
-        static std::unique_ptr<Viper<K, V>> create(const std::string &pool_file, uint64_t initial_pool_size, int index_type,
-                                                   ViperConfig v_config = ViperConfig{});
+        static std::unique_ptr<Viper<K, V>>
+        create(const std::string &pool_file, uint64_t initial_pool_size, int index_type,
+               ViperConfig v_config = ViperConfig{});
 
         static std::unique_ptr<Viper<K, V>> open(const std::string &pool_file, ViperConfig v_config = ViperConfig{});
 
@@ -382,15 +383,20 @@ namespace viper {
         ~Viper();
 
         uint64_t get_index_size();
+
         uint64_t getindexsizewithoutdata();
 
-        hdr_histogram* GetRetrainHdr();
-        hdr_histogram* GetCus1Hdr();
-        hdr_histogram* GetCus2Hdr();
-        hdr_histogram* GetCus3Hdr();
-        hdr_histogram* GetOpHdr();
+        hdr_histogram *GetRetrainHdr();
 
-        void bulkload_index(hdr_histogram * bulk_hdr,int threads);
+        hdr_histogram *GetCus1Hdr();
+
+        hdr_histogram *GetCus2Hdr();
+
+        hdr_histogram *GetCus3Hdr();
+
+        hdr_histogram *GetOpHdr();
+
+        void bulkload_index(hdr_histogram *bulk_hdr, int threads);
 
         void reclaim();
 
@@ -416,72 +422,140 @@ namespace viper {
         };
 
 
-
         class Client : public ReadOnlyClient {
             friend class Viper<K, V>;
 
 
             //1.1
-            class viper_iterator{
+            class viper_iterator {
+
             public:
+                class Node {
+                public:
+                    Node(std::map<uint64_t, uint64_t>::iterator it) : it(it) {}
+
+                    std::map<uint64_t, uint64_t>::iterator it;
+                    V v;
+                    bool flag = false;
+                };
+
                 //2.1 在迭代器中声明dq
-                viper_iterator(Viper<K, V>::Client &viper_client):viper_client(viper_client){
-                    //rand=std::rand();
-                    //cout<<"rand: "<<rand<<endl;
-                }
-                std::deque<stx::btree<uint64_t, uint64_t>::iterator> iterator_deque;
-                stx::btree<uint64_t , uint64_t>::iterator btree_it;//索引树
-                Viper<K, V>::Client &viper_client;//客户机
-                //uint32_t rand=0;
-                V operator*(){
-                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
-                    assert(btree_it!=map->CoreGetEnd());
-                    uint64_t offset=btree_it->second;//找到本树的offset并返回？
-                    //std::cout<<"value: "<<offset<<std::endl;
-                    V value;
-                    viper_client.get_value_from_offset(KVOffset(offset),&value);
-                    return value;
-                }
-                viper_iterator& operator++(){
-                    btree_it++;
-                    //2.2.2右边（即尾部）插入deque
-                    iterator_deque.push_back(btree_it);
-                    cout<<"size:"<<iterator_deque.size()<<endl;
-                    return *this;
-                }
-                viper_iterator& operator--(){
-                    btree_it--;
-                    //2.2.3左边（即头部）插入deque
-                    iterator_deque.push_front(btree_it);
-                    cout<<"size:"<<iterator_deque.size()<<endl;
-                    return *this;
-                }
-                bool operator==(const viper_iterator &other)
-                {
-                    return this->btree_it==other.btree_it;
+                viper_iterator(Viper<K, V>::Client &viper_client, std::map<uint64_t, uint64_t>::iterator btree_it)
+                        : viper_client(viper_client),
+                          btree_it(btree_it) {
+                    iterator_deque.push_back(Node(btree_it));
+                    iterator_deque_iterator = iterator_deque.begin();
                 }
 
-                bool operator!=(const viper_iterator &other)
-                {
-                    return !(this->btree_it==other.btree_it);
+                std::list<Node> iterator_deque;
+                typename std::list<Node>::iterator iterator_deque_iterator;
+                std::map<uint64_t, uint64_t>::iterator btree_it;//索引树
+                Viper<K, V>::Client &viper_client;//客户机
+
+                //uint32_t rand=0;
+                V operator*() {
+                    if ((*iterator_deque_iterator).flag) {
+                        return (*iterator_deque_iterator).v;
+                    }
+                    index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
+                    assert(btree_it != map->CoreGetEnd());
+                    uint64_t offset = btree_it->second;//找到本树的offset并返回？
+                    //std::cout<<"value: "<<offset<<std::endl;
+                    V value;
+                    viper_client.get_value_from_offset(KVOffset(offset), &value);
+                    (*iterator_deque_iterator).flag = true;
+                    (*iterator_deque_iterator).v = value;
+                    return value;
                 }
+
+                viper_iterator &operator++() {
+                    btree_it++;
+                    //2.2.2右边（即尾部）插入deque
+                    if (iterator_deque_iterator == --iterator_deque.end()) {
+                        //cout << "++0:" << btree_it->first<< endl;
+                        iterator_deque.push_back(Node(btree_it));
+                    }
+                    iterator_deque_iterator++;
+                    //cout << "++1:" << btree_it->first<< endl;
+                    //cout << "++2:" << btree_it->second<< endl;
+                    return *this;
+                }
+
+                viper_iterator &operator--() {
+                    btree_it--;
+                    //2.2.3左边（即头部）插入deque
+                    if (iterator_deque_iterator == iterator_deque.begin()) {
+                        iterator_deque.push_front(Node(btree_it));
+                    }
+                    iterator_deque_iterator--;
+                    //cout << "--:" << KVOffset(btree_it->second).get_offset()<< endl;
+                    return *this;
+                }
+
+                bool operator==(const viper_iterator &other) {
+                    return this->btree_it == other.btree_it;
+                }
+
+                bool operator!=(const viper_iterator &other) {
+                    return !(this->btree_it == other.btree_it);
+                }
+
                 //2.3 在析构中解析dq，判断连续，存入nvm
-                ~viper_iterator(){
-                    cout<<"~viper_iterator"<<endl;
-                    //cout<<"~rand: "<<rand<<endl;
-                    if(iterator_deque.size()==0){
+                ~viper_iterator() {
+                    if (iterator_deque.size() == 1) {
                         return;
                     }
-                    //cout<<iterator_deque.front()<<endl;
-                    stx::btree<uint64_t , uint64_t>::iterator temp_btree;
-                    cout<<"iterator_deque size:"<<iterator_deque.size()<<endl;
-                    int judge=0;//判断位置是否连续
+                    cout << "~viper_iterator size: " << iterator_deque.size() << endl;
+                    bool flag = false;
+                    auto begin=iterator_deque.begin();
+                    auto prev=begin;
+                    index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
+                    auto it = map->CoreGetEnd();
+                    int count=0;
+                    for (auto i = ++begin; i !=iterator_deque.end(); i++) {
+                        if(i->it==it){
+                            break;
+                        }
+                        count++;
+                        uint64_t difference = KVOffset(i->it->second).get_offset() -
+                                              KVOffset((*prev).it->second).get_offset();
+                        //cout << "~difference: " << difference << endl;
+                        //cout << "~i: " << KVOffset(i->it->second).get_offset() << endl;
+                        //cout << "~i: " << KVOffset(i->it->second).block_number << endl;
+                        //cout << "~i: " << KVOffset(i->it->second).page_number << endl;
+                        //cout << "~i-1: " << KVOffset(prev->it->second).get_offset() << endl;
+                        //cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
+                        //cout << "~i-1: " << KVOffset(prev->it->second).page_number << endl;
+                        if (KVOffset(i->it->second).block_number == KVOffset(prev->it->second).block_number
+                            && difference > 1) {
+                            cout << "~difference flag: " << difference << endl;
+                            cout << "~difference flag: " << count << endl;
+                            cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;
+                            cout << "~difference flag: " << KVOffset(prev->it->second).get_offset() << endl;
+                            flag = true;
+                            break;
+                        }
+                        prev=i;
+                    }
+                    if (flag) {
+                        for(auto i = prev; i !=iterator_deque.end(); i++) {
+                            viper_client.put(i->it->first, i->v,
+                                             KVOffset(i->it->second));
+                            //auto ii = viper_client.get_iterator(i->it->first);
+                            //cout << "~reput: key: " << ii.btree_it->first << " offset: "
+                                 //<< KVOffset(ii.btree_it->second).get_offset() << endl;
+                        }
+                    }
+                    //原来的
+                    /*std::map<uint64_t, uint64_t>::iterator temp_btree;
+                    cout << "iterator_deque size:" << iterator_deque.size() << endl;
+                    int judge = 0;//判断位置是否连续
                     temp_btree = iterator_deque.front();//用temp存队列头
                     iterator_deque.pop_front();//弹出队列头
-                    while(iterator_deque.size()!=0){
-                        cout<<"!iterator_deque.empty()1"<<endl;
+                    while (iterator_deque.size() != 0) {
+                        cout << "!iterator_deque.empty()1" << endl;
                         temp_btree = iterator_deque.front();//用temp存队列头
-                        cout<<"1"<<endl;
+                        cout << "1" << endl;
                         iterator_deque.pop_front();//弹出队列头
                         //cout<<"2"<<endl;
 
@@ -492,7 +566,7 @@ namespace viper {
                         //cout<<"3"<<endl;
                         offset_size_t temp_offset_position = temp_offset.get_offset();
                         //cout<<"4"<<endl;
-                        stx::btree<uint64_t , uint64_t>::iterator front_btree;//队列头
+                        std::map<uint64_t, uint64_t>::iterator front_btree;//队列头
                         front_btree = iterator_deque.front();
                         //cout<<"5"<<endl;
 
@@ -501,22 +575,21 @@ namespace viper {
                         //cout<<"6"<<endl;
                         offset_size_t front_offset_position = front_offset.get_offset();
                         //cout<<"7"<<endl;
-                        if(front_offset_position-temp_offset_position!=200)
-                        {
-                            judge=1;
-                            cout<<judge<<endl;
+                        if (front_offset_position - temp_offset_position != 200) {
+                            judge = 1;
+                            cout << judge << endl;
                             break;
                         }
-                        cout<<"8"<<endl;
+                        cout << "8" << endl;
                     }
-                    cout<<endl;
-                    cout<<"judge="<<judge<<endl;
-                    if(judge==1){//存在位置不连续的
+                    cout << endl;
+                    cout << "judge=" << judge << endl;
+                    if (judge == 1) {//存在位置不连续的
                         iterator_deque.push_front(temp_btree);//插入之前存入的队列头，此树节点与队列里下一个树节点不连续
-                        while(!iterator_deque.empty()){
-                            cout<<"!iterator_deque.empty()2"<<endl;
+                        while (!iterator_deque.empty()) {
+                            cout << "!iterator_deque.empty()2" << endl;
                             temp_btree = iterator_deque.front();
-                            cout<<"1"<<endl;
+                            cout << "1" << endl;
                             iterator_deque.pop_front();
                             //cout<<"2"<<endl;
                             //如何获得offset？
@@ -526,35 +599,37 @@ namespace viper {
                             kv_offset = KVOffset(temp_btree->second);
                             //cout<<"4"<<endl;
                             V kv_value;
-                            viper_client.get_value_from_offset(kv_offset,&kv_value);
+                            viper_client.get_value_from_offset(kv_offset, &kv_value);
                             //cout<<"5"<<endl;
 
-                            viper_client.put(kv_key,kv_value);
+                            viper_client.put(kv_key, kv_value);
                             //cout<<"6"<<endl;
-                                    //将K和V放进NVM里
+                            //将K和V放进NVM里
                             viper_client.remove(kv_key);
-                            cout<<"7"<<endl;
-                                    //从NVM中移除原来的
+                            cout << "7" << endl;
+                            //从NVM中移除原来的
                         }
 
                     }
-                    cout<<"end!"<<endl;
+                    cout << "end!" << endl;*/
                 }
 
             };
 
 
-
-
         public:
             inline bool put(K &key, V &value);
+
+            inline bool put(const K &key, const V &value, const KVOffset offset);
 
             inline bool put(const K &key, const V &value);
 
             bool get(const K &key, V *value);
 
             viper_iterator get_iterator(const K &key);
+
             viper_iterator get_end();
+
             viper_iterator get_begin();
 
             bool get(const K &key, V *value) const;
@@ -564,12 +639,12 @@ namespace viper {
 
             // xindex start
 
-            bool put(const K &key, const V &value,uint32_t thread_id);
+            bool put(const K &key, const V &value, uint32_t thread_id);
 
-            bool get(const K &key, V *value,uint32_t thread_id);
+            bool get(const K &key, V *value, uint32_t thread_id);
 
             template<typename UpdateFn>
-            bool update(const K &key, UpdateFn update_fn,uint32_t thread_id);
+            bool update(const K &key, UpdateFn update_fn, uint32_t thread_id);
 
             // xindex end
 
@@ -581,7 +656,7 @@ namespace viper {
 
             bool put(const K &key, const V &value, bool delete_old);
 
-            bool put(const K &key, const V &value, bool delete_old,uint32_t thread_id);
+            bool put(const K &key, const V &value, bool delete_old, uint32_t thread_id);
 
             inline void update_access_information();
 
@@ -598,7 +673,6 @@ namespace viper {
             enum PageStrategy : uint8_t {
                 BlockBased, DimmBased
             };
-
 
 
             PageStrategy strategy_;
@@ -657,7 +731,7 @@ namespace viper {
         ViperConfig v_config_;
         std::filesystem::path pool_dir_;
 
-        index::BaseIndex<uint64_t> * map_;
+        index::BaseIndex<uint64_t> *map_;
         static constexpr bool using_fp = requires_fingerprint(K);
 
         std::vector<VPageBlock *> v_blocks_;
@@ -665,7 +739,7 @@ namespace viper {
         std::atomic<size_t> current_size_;
         std::atomic<size_t> reclaimable_ops_;
         std::atomic<offset_size_t> current_block_page_;
-        moodycamel::ConcurrentQueue <block_size_t> free_blocks_;
+        moodycamel::ConcurrentQueue<block_size_t> free_blocks_;
 
         const double resize_threshold_;
         std::atomic<bool> is_resizing_;
@@ -681,71 +755,72 @@ namespace viper {
 
         std::atomic<uint8_t> num_active_clients_;
         const uint8_t num_recovery_threads_;
+
         template<typename Kk>
-        class ArtCare:public index::BaseIndex<Kk>{
+        class ArtCare : public index::BaseIndex<Kk> {
         public:
             static void loadKey(TID tid, Key &key) {
                 // Store the key of the tuple into the key vector
                 // Implementation is database specific
-                auto c=(reinterpret_cast<Viper*>(pv))->get_client();
+                auto c = (reinterpret_cast<Viper *>(pv))->get_client();
                 K k;
-                k=*(c.get_const_entry_from_offset(KVOffset(tid)).first);
-                uint64_t temp=((kv_bm::BMRecord<uint32_t, 2>)k).get_key();
+                k = *(c.get_const_entry_from_offset(KVOffset(tid)).first);
+                uint64_t temp = ((kv_bm::BMRecord<uint32_t, 2>) k).get_key();
                 key.setKeyLen(sizeof(temp));
                 reinterpret_cast<uint64_t *>(&key[0])[0] = __builtin_bswap64(temp);
             }
 
             ART_unsynchronized::Tree *tree;
-            ArtCare(){
-                tree=new ART_unsynchronized::Tree(loadKey);
+
+            ArtCare() {
+                tree = new ART_unsynchronized::Tree(loadKey);
             }
-            ~ArtCare(){
+
+            ~ArtCare() {
                 delete tree;
             }
-            bool SupportBulk(int threads){
+
+            bool SupportBulk(int threads) {
                 return false;
             }
-            index::KeyValueOffset CoreInsert(const Kk & k, index::KeyValueOffset o) {
+
+            index::KeyValueOffset CoreInsert(const Kk &k, index::KeyValueOffset o) {
                 Key key;
                 key.setKeyLen(sizeof(k));
                 reinterpret_cast<uint64_t *>(&key[0])[0] = __builtin_bswap64(k);
                 tree->insert(key, o.get_offset());
                 return index::KeyValueOffset();
             }
-            index::KeyValueOffset CoreGet(const Kk & k) {
+
+            index::KeyValueOffset CoreGet(const Kk &k) {
                 Key key;
                 key.setKeyLen(sizeof(k));
                 reinterpret_cast<uint64_t *>(&key[0])[0] = __builtin_bswap64(k);
                 auto val = tree->lookup(key);
-                return index::KeyValueOffset((uint64_t)val);
+                return index::KeyValueOffset((uint64_t) val);
             }
         };
     };
 
 
-
-
-
-
-
     template<typename K, typename V>
-    uint64_t Viper<K, V>::get_index_size(){
+    uint64_t Viper<K, V>::get_index_size() {
         return map_->GetIndexSize();
     }
 
     template<typename K, typename V>
-    uint64_t Viper<K, V>::getindexsizewithoutdata(){
+    uint64_t Viper<K, V>::getindexsizewithoutdata() {
         return map_->GetIndexSizeWithoutData();
     }
 
     template<typename K, typename V>
-    void Viper<K, V>::bulkload_index(hdr_histogram * bulk_hdr,int threads){
-        if(map_->SupportBulk(threads)==false){
+    void Viper<K, V>::bulkload_index(hdr_histogram *bulk_hdr, int threads) {
+        if (map_->SupportBulk(threads) == false) {
             return;
         }
         const block_size_t num_used_blocks = v_base_.v_metadata->num_used_blocks.load(LOAD_ORDER);
 
-        std::vector<std::pair<uint64_t, KVOffset>> * vector= new std::vector<std::pair<uint64_t, KVOffset>>;
+        std::vector<std::pair<uint64_t, KVOffset>> *vector = new std::vector<std::pair<uint64_t, KVOffset>>;
         for (block_size_t block_num = 0; block_num < num_used_blocks; ++block_num) {
             VPageBlock *block = v_blocks_[block_num];
             for (page_size_t page_num = 0; page_num < num_pages_per_block; ++page_num) {
@@ -762,24 +837,26 @@ namespace viper {
                     // Data is present
                     const K &key = page.data[slot_num].first;
                     const KVOffset offset{block_num, page_num, slot_num};
-                    vector->push_back(std::pair<uint64_t, KVOffset>(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(),offset));
+                    vector->push_back(
+                            std::pair<uint64_t, KVOffset>(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), offset));
                 }
             }
         }
-        std::sort (vector->begin(), vector->end(), index::BulkComparator<uint64_t, index::KeyValueOffset>());
-        std::cout<<"Bulk load size:"+std::to_string(vector->size())<<std::endl;
-        auto p = map_->bulk_load(vector,bulk_hdr,threads);
-        auto temp_p=map_;
+        std::sort(vector->begin(), vector->end(), index::BulkComparator<uint64_t, index::KeyValueOffset>());
+        std::cout << "Bulk load size:" + std::to_string(vector->size()) << std::endl;
+        auto p = map_->bulk_load(vector, bulk_hdr, threads);
+        auto temp_p = map_;
         delete temp_p;
         delete vector;
-        map_=p;
-        std::cout<<"Done bulk load"<<std::endl;
+        map_ = p;
+        std::cout << "Done bulk load" << std::endl;
         return;
     }
 
     template<typename K, typename V>
-    std::unique_ptr<Viper<K, V>> Viper<K, V>::create(const std::string &pool_file, uint64_t initial_pool_size, int index_type
-                                                     ,ViperConfig v_config) {
+    std::unique_ptr<Viper<K, V>>
+    Viper<K, V>::create(const std::string &pool_file, uint64_t initial_pool_size, int index_type,
+                        ViperConfig v_config) {
         return std::make_unique<Viper < K, V>>
         (
                 init_pool(pool_file, initial_pool_size, true, v_config), pool_file, true, v_config, index_type);
@@ -799,53 +876,53 @@ namespace viper {
             num_recovery_threads_{v_config.num_recovery_threads} {
         if (index_type == 1) {
             map_ = new cceh::CCEH<uint64_t>{131072};
-            std::cout<<"use cceh as index"<<std::endl;
-        }else if(index_type == 2){
-            map_ = new alex::Alex<uint64_t,index::KeyValueOffset>{};
-            std::cout<<"use alex as index"<<std::endl;
-        }else if(index_type == 3){
-            map_=new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use cceh as index" << std::endl;
+        } else if (index_type == 2) {
+            map_ = new alex::Alex<uint64_t, index::KeyValueOffset>{};
+            std::cout << "use alex as index" << std::endl;
+        } else if (index_type == 3) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
             //map_ = new pgm::DynamicPGMIndex<uint64_t,index::KeyValueOffset>{};
-            std::cout<<"use pgm as index"<<std::endl;
-        }else if(index_type==4){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use fiting tree BufferIndex as index"<<std::endl;
-        }else if(index_type==5){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use fiting tree InplaceIndex  as index"<<std::endl;
-        }else if(index_type==6){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use xindex-r as index"<<std::endl;
-        }else if(index_type==7){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use xindex-h as index"<<std::endl;
-        }else if(index_type==8){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use rs as index"<<std::endl;
-        }else if(index_type==9){
-            map_=new index::CuckooCare<uint64_t>();
-            std::cout<<"use cuckoo as index"<<std::endl;
-        }else if(index_type==10){
-            map_=new index::MassCare<uint64_t>();
-            std::cout<<"use mass tree as index"<<std::endl;
-        }else if(index_type==11){
-            map_=new index::SkipListCare<uint64_t>();
-            std::cout<<"use skiplist as index"<<std::endl;
-        }else if(index_type==12){
-            map_=new index::BwTreeCare<uint64_t>();
-            std::cout<<"use bwtree as index"<<std::endl;
-        }else if(index_type==13){
-            map_=new index::WormCare<uint64_t>();
-            std::cout<<"use wormhole as index"<<std::endl;
-        }else if(index_type==14){
-            map_=new index::BTreeCare<uint64_t>();
-            std::cout<<"use stx btree as index"<<std::endl;
-        }else if(index_type==15){
-            map_=new ArtCare<uint64_t>();
-            std::cout<<"use art as index"<<std::endl;
-        }else if(index_type==16){
-            map_=new index::DummyIndex<uint64_t>(index_type);
-            std::cout<<"use lipp as index"<<std::endl;
+            std::cout << "use pgm as index" << std::endl;
+        } else if (index_type == 4) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use fiting tree BufferIndex as index" << std::endl;
+        } else if (index_type == 5) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use fiting tree InplaceIndex  as index" << std::endl;
+        } else if (index_type == 6) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use xindex-r as index" << std::endl;
+        } else if (index_type == 7) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use xindex-h as index" << std::endl;
+        } else if (index_type == 8) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use rs as index" << std::endl;
+        } else if (index_type == 9) {
+            map_ = new index::CuckooCare<uint64_t>();
+            std::cout << "use cuckoo as index" << std::endl;
+        } else if (index_type == 10) {
+            map_ = new index::MassCare<uint64_t>();
+            std::cout << "use mass tree as index" << std::endl;
+        } else if (index_type == 11) {
+            map_ = new index::SkipListCare<uint64_t>();
+            std::cout << "use skiplist as index" << std::endl;
+        } else if (index_type == 12) {
+            map_ = new index::BwTreeCare<uint64_t>();
+            std::cout << "use bwtree as index" << std::endl;
+        } else if (index_type == 13) {
+            map_ = new index::WormCare<uint64_t>();
+            std::cout << "use wormhole as index" << std::endl;
+        } else if (index_type == 14) {
+            map_ = new index::BTreeCare<uint64_t>();
+            std::cout << "use stx btree as index" << std::endl;
+        } else if (index_type == 15) {
+            map_ = new ArtCare<uint64_t>();
+            std::cout << "use art as index" << std::endl;
+        } else if (index_type == 16) {
+            map_ = new index::DummyIndex<uint64_t>(index_type);
+            std::cout << "use lipp as index" << std::endl;
         }
         current_block_page_ = 0;
         current_size_ = 0;
@@ -870,7 +947,7 @@ namespace viper {
             recover_database();
         }
         current_block_page_ = KVOffset{v_base.v_metadata->num_used_blocks.load(LOAD_ORDER), 0, 0}.offset;
-        pv=this;
+        pv = this;
     }
 
     template<typename K, typename V>
@@ -1080,7 +1157,7 @@ namespace viper {
     }
 
     template<typename K, typename V>
-    ViperBase Viper<K, V>:: init_pool(const std::string &pool_file, uint64_t pool_size,
+    ViperBase Viper<K, V>::init_pool(const std::string &pool_file, uint64_t pool_size,
                                      bool is_new_pool, ViperConfig v_config) {
         constexpr size_t block_size = sizeof(VPageBlock);
         ViperInitData init_data;
@@ -1193,7 +1270,7 @@ namespace viper {
                         // Data is present
                         const K &key = page.data[slot_num].first;
                         const KVOffset offset{block_num, page_num, slot_num};
-                        map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), offset, key_check_fn);
+                        map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), offset, key_check_fn);
                         num_entries++;
                     }
                 }
@@ -1219,6 +1296,7 @@ namespace viper {
         DEBUG_LOG("RECOVERY DURATION: " << duration << " ms.");
         DEBUG_LOG("Re-inserted " << current_size_.load(LOAD_ORDER) << " keys.");
     }
+
 /*
     template<>
     void Viper<std::string, std::string>::recover_database() {
@@ -1364,25 +1442,27 @@ namespace viper {
     }
 
     template<typename K, typename V>
-    hdr_histogram* Viper<K, V>::GetRetrainHdr(){
+    hdr_histogram *Viper<K, V>::GetRetrainHdr() {
         return map_->GetRetrainHdr();
     }
+
     template<typename K, typename V>
-    hdr_histogram* Viper<K, V>::GetCus1Hdr(){
+    hdr_histogram *Viper<K, V>::GetCus1Hdr() {
         return map_->GetCusHdr1();
     }
+
     template<typename K, typename V>
-    hdr_histogram* Viper<K, V>::GetCus2Hdr(){
+    hdr_histogram *Viper<K, V>::GetCus2Hdr() {
         return map_->GetCusHdr2();
     }
 
     template<typename K, typename V>
-    hdr_histogram* Viper<K, V>::GetCus3Hdr(){
+    hdr_histogram *Viper<K, V>::GetCus3Hdr() {
         return map_->GetCusHdr3();
     }
 
     template<typename K, typename V>
-    hdr_histogram* Viper<K, V>::GetOpHdr(){
+    hdr_histogram *Viper<K, V>::GetOpHdr() {
         return map_->GetOpHdr();
     }
 
@@ -1417,6 +1497,43 @@ namespace viper {
     }
 
     template<typename K, typename V>
+    bool Viper<K, V>::Client::put(const K &key, const V &value, const KVOffset offset) {
+        v_page_->lock();
+
+        // We now have the lock on this page
+        std::bitset<VPage::num_slots_per_page> *free_slots = &v_page_->free_slots;
+        const data_offset_size_t free_slot_idx = free_slots->_Find_first();
+
+        if (free_slot_idx >= free_slots->size()) {
+            // Page is full. Free lock on page and restart.
+            v_page_->unlock();
+            update_access_information();
+            return put(key, value, offset);
+        }
+
+        // We have found a free slot on this page. Persist data.
+        v_page_->data[free_slot_idx] = {key, value};
+        typename VPage::VEntry *entry_ptr = v_page_->data.data() + free_slot_idx;
+        internal::pmem_persist(entry_ptr, sizeof(typename VPage::VEntry));
+
+        free_slots->reset(free_slot_idx);
+        internal::pmem_persist(free_slots, sizeof(*free_slots));
+
+        // Store data in DRAM map.
+        const KVOffset kv_offset{v_block_number_, v_page_number_, free_slot_idx};
+        KVOffset old_offset;
+        this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), kv_offset);
+
+        v_page_->unlock();
+
+        // We have added one value, so +1
+        size_delta_++;
+        info_sync();
+
+        return true;
+    }
+
+    template<typename K, typename V>
     bool Viper<K, V>::Client::put(const K &key, const V &value, const bool delete_old) {
         v_page_->lock();
 
@@ -1445,9 +1562,10 @@ namespace viper {
 
         if constexpr (using_fp) {
             auto key_check_fn = [&](auto key, auto offset) { return this->viper_.check_key_equality(key, offset); };
-            old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), kv_offset, key_check_fn);
+            old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), kv_offset,
+                                                   key_check_fn);
         } else {
-            old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), kv_offset);
+            old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), kv_offset);
         }
 
         const bool is_new_item = old_offset.is_tombstone();
@@ -1466,7 +1584,7 @@ namespace viper {
     }
 
     template<typename K, typename V>
-    bool Viper<K, V>::Client::put(const K &key, const V &value, const bool delete_old,uint32_t thread_id) {
+    bool Viper<K, V>::Client::put(const K &key, const V &value, const bool delete_old, uint32_t thread_id) {
         v_page_->lock();
 
         // We now have the lock on this page
@@ -1477,7 +1595,7 @@ namespace viper {
             // Page is full. Free lock on page and restart.
             v_page_->unlock();
             update_access_information();
-            return put(key, value, delete_old,thread_id);
+            return put(key, value, delete_old, thread_id);
         }
 
         // We have found a free slot on this page. Persist data.
@@ -1492,7 +1610,7 @@ namespace viper {
         const KVOffset kv_offset{v_block_number_, v_page_number_, free_slot_idx};
         KVOffset old_offset;
 
-        old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), kv_offset,thread_id);
+        old_offset = this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), kv_offset, thread_id);
 
 
         const bool is_new_item = old_offset.is_tombstone();
@@ -1632,8 +1750,8 @@ namespace viper {
     }
 
     template<typename K, typename V>
-    bool Viper<K, V>::Client::put(const K &key, const V &value,uint32_t thread_id) {
-        return put(key, value, true,thread_id);
+    bool Viper<K, V>::Client::put(const K &key, const V &value, uint32_t thread_id) {
+        return put(key, value, true, thread_id);
     }
 
 /**
@@ -1644,62 +1762,60 @@ namespace viper {
  */
     template<typename K, typename V>
     bool Viper<K, V>::Client::get(const K &key, V *value) {
-        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
-        typename Viper< K, V>::Client::viper_iterator it=get_iterator(key);
-        std::cout<<"AAA"<<std::endl;
-        *value=*it;
+        index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
+        typename Viper<K, V>::Client::viper_iterator it = get_iterator(key);
+        std::cout << "AAA" << std::endl;
+        *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
-        while(it!=get_end()){
+        while (it != get_end()) {
             ++it;//用Temp向右遍历
         }
 
-        std::cout<<"BBB"<<std::endl;
+        std::cout << "BBB" << std::endl;
         //temp = it.btree_it;//用temp定位it
 
-        while(it!=get_begin()){
+        while (it != get_begin()) {
             --it;//用Temp向右遍历
         }
-        std::cout<<"CCC"<<std::endl;
+        std::cout << "CCC" << std::endl;
         return true;
     }
 
     //1.2
     template<typename K, typename V>
-    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
-        viper_iterator  get_viper_iterator(*this);//this指当前对象Client
-        cout<<"empty:"<<get_viper_iterator.iterator_deque.empty()<<endl;
-        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);//？？
-        uint64_t k=((kv_bm::BMRecord<uint32_t, 2>)key).get_key();
-        stx::btree<uint64_t , uint64_t>::iterator it=map->CoreGetIt(k);
-        get_viper_iterator.btree_it=it;
-        //2.2.1插入deque头结点
-        get_viper_iterator.iterator_deque.push_back(it);
+    typename Viper<K, V>::Client::viper_iterator Viper<K, V>::Client::get_iterator(const K &key) {
+
+        index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);//？？
+        uint64_t k = ((kv_bm::BMRecord<uint32_t, 2>) key).get_key();
+        std::map<uint64_t, uint64_t>::iterator it = map->CoreGetIt(k);
+        viper_iterator get_viper_iterator(*this, it);//this指当前对象Client
+        //cout << "empty:" << get_viper_iterator.iterator_deque.empty() << endl;
         //cout<<get_viper_iterator.iterator_deque.front()<<endl;
-        cout<<"size"<<get_viper_iterator.iterator_deque.size()<<endl;
+        //cout << "size" << get_viper_iterator.iterator_deque.size() << endl;
         return get_viper_iterator;
     }
+
     template<typename K, typename V>
-    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_end() {
-        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
-        auto it=map->CoreGetEnd();
-        viper_iterator ret(*this);
-        ret.btree_it=it;
-        return ret;
-    }
-    template<typename K, typename V>
-    typename Viper< K, V>::Client::viper_iterator Viper<K, V>::Client::get_begin() {
-        index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
-        auto it=map->CoreGetBegin();
-        viper_iterator ret(*this);
-        ret.btree_it=it;
+    typename Viper<K, V>::Client::viper_iterator Viper<K, V>::Client::get_end() {
+        index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
+        auto it = map->CoreGetEnd();
+        viper_iterator ret(*this, it);
         return ret;
     }
 
     template<typename K, typename V>
-    bool Viper<K, V>::Client::get(const K &key, V *value,uint32_t thread_id) {
+    typename Viper<K, V>::Client::viper_iterator Viper<K, V>::Client::get_begin() {
+        index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
+        auto it = map->CoreGetBegin();
+        viper_iterator ret(*this, it);
+        return ret;
+    }
+
+    template<typename K, typename V>
+    bool Viper<K, V>::Client::get(const K &key, V *value, uint32_t thread_id) {
         while (true) {
-            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(),thread_id);
+            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), thread_id);
             if (kv_offset.is_tombstone()) {
                 return false;
             }
@@ -1723,7 +1839,7 @@ namespace viper {
         };
 
         while (true) {
-            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
+            KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), key_check_fn);
             if (kv_offset.is_tombstone()) {
                 return false;
             }
@@ -1765,7 +1881,8 @@ namespace viper {
         };
 
         while (true) {
-            const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
+            const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(),
+                                                              key_check_fn);
             if (kv_offset.is_tombstone()) {
                 return false;
             }
@@ -1782,15 +1899,17 @@ namespace viper {
             return true;
         }
     }
+
     template<typename K, typename V>
     template<typename UpdateFn>
-    bool Viper<K, V>::Client::update(const K &key, UpdateFn update_fn,uint32_t thread_id) {
+    bool Viper<K, V>::Client::update(const K &key, UpdateFn update_fn, uint32_t thread_id) {
         if constexpr (std::is_same_v<K, std::string>) {
             throw std::runtime_error("In-place update not supported for variable length records!");
         }
 
         while (true) {
-            const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), thread_id);
+            const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(),
+                                                              thread_id);
             if (kv_offset.is_tombstone()) {
                 return false;
             }
@@ -1819,7 +1938,7 @@ namespace viper {
             else { return cceh::CCEH<K>::dummy_key_check(key, offset); }
         };
 
-        const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), key_check_fn);
+        const KVOffset kv_offset = this->viper_.map_->Get(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), key_check_fn);
         if (kv_offset.is_tombstone()) {
             return false;
         }
@@ -1846,7 +1965,7 @@ namespace viper {
             // Old record to delete is on the same page. We already hold the lock here.
             invalidate_record(v_page_, data_offset);
             if (delete_offset) {
-                this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), IndexV::NONE(), key_check_fn);
+                this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), IndexV::NONE(), key_check_fn);
             }
             --size_delta_;
             return;
@@ -1916,7 +2035,7 @@ namespace viper {
         }
 
         if (delete_offset) {
-            this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>)key).get_key(), IndexV::NONE(), key_check_fn);
+            this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), IndexV::NONE(), key_check_fn);
         }
 
         if (has_lock) {
@@ -1951,9 +2070,9 @@ namespace viper {
             const size_t entry_size = var_entry->key_size + var_entry->value_size + meta_size;
             v_page->modified_percentage += (entry_size * 100) / VPage::DATA_SIZE;
         } else {*/
-            auto *free_slots = &v_page->free_slots;
-            free_slots->set(data_offset);
-            internal::pmem_persist(free_slots, sizeof(*free_slots));
+        auto *free_slots = &v_page->free_slots;
+        free_slots->set(data_offset);
+        internal::pmem_persist(free_slots, sizeof(*free_slots));
         //}
     }
 
@@ -2048,9 +2167,9 @@ namespace viper {
             }
             return {var_entry.key(), var_entry.value()};
         } else {*/
-            const auto[block, page, slot] = offset.get_offsets();
-            const auto &entry = this->viper_.v_blocks_[block]->v_pages[page].data[slot];
-            return {&entry.first, &entry.second};
+        const auto[block, page, slot] = offset.get_offsets();
+        const auto &entry = this->viper_.v_blocks_[block]->v_pages[page].data[slot];
+        return {&entry.first, &entry.second};
         //}
     }
 
@@ -2068,7 +2187,7 @@ namespace viper {
             const std::string_view &str_val = entry.second;
             value->assign(str_val.data(), str_val.size());
         } else {*/
-            *value = *(entry.second);
+        *value = *(entry.second);
         //}
         return lock_val == page_lock.load(LOAD_ORDER);
     }
