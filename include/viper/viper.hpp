@@ -443,10 +443,6 @@ namespace viper {
                     return value;
                 }
                 viper_iterator& operator++(){
-                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
-                    if(btree_it==map->CoreGetEnd()){
-                        return *this;
-                    }
                     btree_it++;
                     //2.2.2右边（即尾部）插入deque
                     iterator_deque.push_back(btree_it);
@@ -454,10 +450,6 @@ namespace viper {
                     return *this;
                 }
                 viper_iterator& operator--(){
-                    index::BTreeCare<uint64_t> *map=reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
-                    if(btree_it==map->CoreGetBegin()){
-                        return *this;
-                    }
                     btree_it--;
                     //2.2.3左边（即头部）插入deque
                     iterator_deque.push_front(btree_it);
