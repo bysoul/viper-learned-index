@@ -510,10 +510,10 @@ namespace viper {
                     auto begin=iterator_deque.begin();
                     auto prev=begin;
                     index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(viper_client.viper_.map_);
-                    auto it = map->CoreGetEnd();
+                    auto end = map->CoreGetEnd();
                     int count=0;
                     for (auto i = ++begin; i !=iterator_deque.end(); i++) {
-                        if(i->it==it){
+                        if(i->it==end){
                             break;
                         }
                         count++;
@@ -539,6 +539,9 @@ namespace viper {
                     }
                     if (flag) {
                         for(auto i = prev; i !=iterator_deque.end(); i++) {
+                            if(i->it==end){
+                                break;
+                            }
                             viper_client.put(i->it->first, i->v,
                                              KVOffset(i->it->second));
                             //auto ii = viper_client.get_iterator(i->it->first);
@@ -1769,6 +1772,7 @@ namespace viper {
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
         while (it != get_end()) {
+            *it;
             ++it;//用Temp向右遍历
         }
 
@@ -1777,6 +1781,7 @@ namespace viper {
 
         while (it != get_begin()) {
             --it;//用Temp向右遍历
+            *it;
         }
         std::cout << "CCC" << std::endl;
         return true;
