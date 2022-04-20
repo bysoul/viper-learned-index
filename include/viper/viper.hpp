@@ -532,17 +532,20 @@ namespace viper {
                             break;
                         }
                         count++;
-                        uint64_t difference = KVOffset(i->it->second).get_offset() -
-                                              KVOffset((*prev).it->second).get_offset();
+                        uint64_t difference = KVOffset(i->it->second).get_offset() > KVOffset((*prev).it->second).get_offset()
+                                              ?KVOffset(i->it->second).get_offset()-KVOffset(prev->it->second).get_offset()
+                                              :KVOffset(prev->it->second).get_offset() - KVOffset(i->it->second).get_offset();
                         //cout << "~difference: " << difference << endl;
                         //cout << "~i: " << KVOffset(i->it->second).get_offset() << endl;
                         //cout << "~i: " << KVOffset(i->it->second).block_number << endl;
                         //cout << "~i: " << KVOffset(i->it->second).page_number << endl;
-                        //cout << "~i-1: " << KVOffset(prev->it->second).get_offset() << endl;
+                        // cout << "~i-1: " << KVOffset(prev->it->second).get_offset() << endl;
                         //cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
                         //cout << "~i-1: " << KVOffset(prev->it->second).page_number << endl;
                         if (KVOffset(i->it->second).block_number == KVOffset(prev->it->second).block_number
                             && difference > 1) {
+                            cout << "~i: " << KVOffset(i->it->second).block_number << endl;
+                            cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
                             cout << "~difference flag: " << difference << endl;
                             cout << "~difference flag: " << count << endl;
                             cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;

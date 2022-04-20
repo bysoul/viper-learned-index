@@ -43,6 +43,9 @@ namespace viper::index {
             typename std::map<K, uint64_t>::iterator i=btree.begin();
             return i;
         }
+        int CoreGetSize() {
+            return btree.size();
+        }
 
     };
 }
