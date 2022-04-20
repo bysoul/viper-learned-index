@@ -520,7 +520,7 @@ namespace viper {
                     if (iterator_deque.size() == 1) {
                         return;
                     }
-                    cout << "~viper_iterator size: " << iterator_deque.size() << endl;
+                    //cout << "~viper_iterator size: " << iterator_deque.size() << endl;
                     bool flag = false;
                     auto begin=iterator_deque.begin();
                     auto prev=begin;
@@ -1782,7 +1782,7 @@ namespace viper {
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
         typename Viper<K, V>::Client::viper_iterator it = get_iterator(key);
-        std::cout << "AAA" << std::endl;
+        //std::cout << "AAA" << std::endl;
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
@@ -1791,14 +1791,14 @@ namespace viper {
             ++it;//用Temp向右遍历
         }
 
-        std::cout << "BBB" << std::endl;
+        //std::cout << "BBB" << std::endl;
         //temp = it.btree_it;//用temp定位it
 
         while (it != get_begin()) {
             --it;//用Temp向右遍历
             *it;
         }
-        std::cout << "CCC" << std::endl;
+        //std::cout << "CCC" << std::endl;
         return true;
     }
 
