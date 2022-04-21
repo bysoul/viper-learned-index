@@ -36,6 +36,7 @@ struct BMRecord {
 
     BMRecord(uint64_t x) { data.fill(static_cast<T>(x)); }
     BMRecord(uint32_t x) { data.fill(static_cast<T>(x)); }
+    BMRecord(uint64_t x,bool flag) { *(uint64_t*) data.data()=x; }
 
     inline bool operator==(const BMRecord& other) const {
         return data == other.data;

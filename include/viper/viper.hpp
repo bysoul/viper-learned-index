@@ -433,7 +433,6 @@ namespace viper {
                 class Node {
                 public:
                     Node(std::map<uint64_t, uint64_t>::iterator it) : it(it) {}
-
                     std::map<uint64_t, uint64_t>::iterator it;
                     V v;
                     bool flag = false;
@@ -514,13 +513,12 @@ namespace viper {
 
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator() {
-                    if(!op_open){
+                    if(op_open){
                         return;
                     }
                     if (iterator_deque.size() == 1) {
                         return;
                     }
-                    //cout << "~viper_iterator size: " << iterator_deque.size() << endl;
                     bool flag = false;
                     auto begin=iterator_deque.begin();
                     auto prev=begin;
@@ -543,6 +541,7 @@ namespace viper {
                         //cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
                         //cout << "~i-1: " << KVOffset(prev->it->second).page_number << endl;
                         if (KVOffset(i->it->second).block_number == KVOffset(prev->it->second).block_number
+                            && KVOffset(i->it->second).page_number == KVOffset(prev->it->second).page_number
                             && difference > 1) {
                             //cout << "~difference flag: " << difference << endl;
                             //cout << "~difference flag: " << count << endl;
@@ -554,11 +553,12 @@ namespace viper {
                         prev=i;
                     }
                     if (flag) {
+                        cout << "~viper_iterator size: " << iterator_deque.size() << endl;
                         for(auto i = prev; i !=iterator_deque.end(); i++) {
                             if(i->it==end){
                                 break;
                             }
-                            viper_client.put(i->it->first, i->v,
+                            viper_client.put(kv_bm::BMRecord<uint32_t, 2>(i->it->first,true), i->v,
                                              KVOffset(i->it->second));
                             //auto ii = viper_client.get_iterator(i->it->first);
                             //cout << "~reput: key: " << ii.btree_it->first << " offset: "
@@ -1541,6 +1541,9 @@ namespace viper {
         // Store data in DRAM map.
         const KVOffset kv_offset{v_block_number_, v_page_number_, free_slot_idx};
         KVOffset old_offset;
+        //std::cout<<"aaa"<<kv_offset.get_offset()<<std::endl;
+        //std::cout<<"aaa"<<kv_offset.block_number<<std::endl;
+        //std::cout<<"aaa"<<to_string(static_cast<uint8_t>(kv_offset.page_number))<<std::endl;
         this->viper_.map_->Insert(((kv_bm::BMRecord<uint32_t, 2>) key).get_key(), kv_offset);
 
         v_page_->unlock();
@@ -1800,6 +1803,16 @@ namespace viper {
             *it;
         }
         //std::cout << "CCC" << std::endl;
+        for(int i=0;i<20;i++){
+            while (it != get_end()) {
+                *it;
+                ++it;//用Temp向右遍历
+            }
+            while (it != get_begin()) {
+                --it;//用Temp向右遍历
+                *it;
+            }
+        }
         return true;
     }
 
