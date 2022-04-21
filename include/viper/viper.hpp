@@ -520,7 +520,7 @@ namespace viper {
                     if (iterator_deque.size() == 1) {
                         return;
                     }
-                    cout << "~viper_iterator size: " << iterator_deque.size() << endl;
+                    //cout << "~viper_iterator size: " << iterator_deque.size() << endl;
                     bool flag = false;
                     auto begin=iterator_deque.begin();
                     auto prev=begin;
@@ -539,17 +539,15 @@ namespace viper {
                         //cout << "~i: " << KVOffset(i->it->second).get_offset() << endl;
                         //cout << "~i: " << KVOffset(i->it->second).block_number << endl;
                         //cout << "~i: " << KVOffset(i->it->second).page_number << endl;
-                        // cout << "~i-1: " << KVOffset(prev->it->second).get_offset() << endl;
+                        //cout << "~i-1: " << KVOffset(prev->it->second).get_offset() << endl;
                         //cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
                         //cout << "~i-1: " << KVOffset(prev->it->second).page_number << endl;
                         if (KVOffset(i->it->second).block_number == KVOffset(prev->it->second).block_number
                             && difference > 1) {
-                            cout << "~i: " << KVOffset(i->it->second).block_number << endl;
-                            cout << "~i-1: " << KVOffset(prev->it->second).block_number << endl;
-                            cout << "~difference flag: " << difference << endl;
-                            cout << "~difference flag: " << count << endl;
-                            cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;
-                            cout << "~difference flag: " << KVOffset(prev->it->second).get_offset() << endl;
+                            //cout << "~difference flag: " << difference << endl;
+                            //cout << "~difference flag: " << count << endl;
+                            //cout << "~difference flag: " << KVOffset(i->it->second).get_offset() << endl;
+                            //cout << "~difference flag: " << KVOffset(prev->it->second).get_offset() << endl;
                             flag = true;
                             break;
                         }
@@ -1785,7 +1783,7 @@ namespace viper {
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
         typename Viper<K, V>::Client::viper_iterator it = get_iterator(key);
-        std::cout << "AAA" << std::endl;
+        //std::cout << "AAA" << std::endl;
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
@@ -1794,14 +1792,14 @@ namespace viper {
             ++it;//用Temp向右遍历
         }
 
-        std::cout << "BBB" << std::endl;
+        //std::cout << "BBB" << std::endl;
         //temp = it.btree_it;//用temp定位it
 
         while (it != get_begin()) {
             --it;//用Temp向右遍历
             *it;
         }
-        std::cout << "CCC" << std::endl;
+        //std::cout << "CCC" << std::endl;
         return true;
     }
 
