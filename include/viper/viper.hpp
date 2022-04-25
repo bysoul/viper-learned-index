@@ -454,7 +454,7 @@ namespace viper {
 
                 //uint32_t rand=0;
                 V operator*() {
-                    if(false) {
+                    if(op_open) {
                         if ((*iterator_deque_iterator).flag) {
                             return (*iterator_deque_iterator).v;
                         }
@@ -480,7 +480,7 @@ namespace viper {
                 viper_iterator &operator++() {
                     btree_it++;
                     //2.2.2右边（即尾部）插入deque
-                    if(false){
+                    if(op_open){
                         if (iterator_deque_iterator == --iterator_deque.end()) {
                             //cout << "++0:" << btree_it->first<< endl;
                             iterator_deque.push_back(Node(btree_it));
@@ -493,7 +493,7 @@ namespace viper {
                 viper_iterator &operator--() {
                     btree_it--;
                     //2.2.3左边（即头部）插入deque
-                    if(false){
+                    if(op_open){
                         if (iterator_deque_iterator == iterator_deque.begin()) {
                             iterator_deque.push_front(Node(btree_it));
                         }
@@ -513,7 +513,7 @@ namespace viper {
 
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator() {
-                    if(false){
+                    if(!op_open){
                         return;
                     }
                     if (iterator_deque.size() == 1) {
