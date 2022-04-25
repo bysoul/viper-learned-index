@@ -450,11 +450,11 @@ namespace viper {
                 typename std::list<Node>::iterator iterator_deque_iterator;
                 std::map<uint64_t, uint64_t>::iterator btree_it;//索引树
                 Viper<K, V>::Client &viper_client;//客户机
-                bool op_open=true;
+                bool op_open=false;
 
                 //uint32_t rand=0;
                 V operator*() {
-                    if(op_open) {
+                    if(false) {
                         if ((*iterator_deque_iterator).flag) {
                             return (*iterator_deque_iterator).v;
                         }
@@ -480,7 +480,7 @@ namespace viper {
                 viper_iterator &operator++() {
                     btree_it++;
                     //2.2.2右边（即尾部）插入deque
-                    if(op_open){
+                    if(false){
                         if (iterator_deque_iterator == --iterator_deque.end()) {
                             //cout << "++0:" << btree_it->first<< endl;
                             iterator_deque.push_back(Node(btree_it));
@@ -493,7 +493,7 @@ namespace viper {
                 viper_iterator &operator--() {
                     btree_it--;
                     //2.2.3左边（即头部）插入deque
-                    if(op_open){
+                    if(false){
                         if (iterator_deque_iterator == iterator_deque.begin()) {
                             iterator_deque.push_front(Node(btree_it));
                         }
@@ -513,7 +513,7 @@ namespace viper {
 
                 //2.3 在析构中解析dq，判断连续，存入nvm
                 ~viper_iterator() {
-                    if(op_open){
+                    if(false){
                         return;
                     }
                     if (iterator_deque.size() == 1) {
@@ -1786,7 +1786,7 @@ namespace viper {
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
         typename Viper<K, V>::Client::viper_iterator it = get_iterator(key);
-        //std::cout << "AAA" << std::endl;
+        std::cout << "AAA" << std::endl;
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
@@ -1803,7 +1803,7 @@ namespace viper {
             *it;
         }
         //std::cout << "CCC" << std::endl;
-        for(int i=0;i<20;i++){
+        for(int i=0;i<0;i++){
             while (it != get_end()) {
                 *it;
                 ++it;//用Temp向右遍历
