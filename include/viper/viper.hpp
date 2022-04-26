@@ -450,7 +450,7 @@ namespace viper {
                 typename std::list<Node>::iterator iterator_deque_iterator;
                 std::map<uint64_t, uint64_t>::iterator btree_it;//索引树
                 Viper<K, V>::Client &viper_client;//客户机
-                bool op_open=true;
+                bool op_open=false;
 
                 //uint32_t rand=0;
                 V operator*() {
