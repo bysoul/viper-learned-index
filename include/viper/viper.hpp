@@ -1790,6 +1790,12 @@ namespace viper {
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
+        int count=10;
+        for(int i=0;i<count&&it != get_end();i++){
+            *it;
+            ++it;//用Temp向右遍历
+        }
+
         while (it != get_end()) {
             *it;
             ++it;//用Temp向右遍历
@@ -1798,10 +1804,16 @@ namespace viper {
         //std::cout << "BBB" << std::endl;
         //temp = it.btree_it;//用temp定位it
 
-        while (it != get_begin()) {
-            --it;//用Temp向右遍历
+        for(int i=0;i<count&&it != get_begin();i++){
+            --it;//用Temp向左遍历
             *it;
         }
+
+        while (it != get_begin()) {
+            --it;//用Temp向左遍历
+            *it;
+        }
+
         //std::cout << "CCC" << std::endl;
         for(int i=0;i<0;i++){
             while (it != get_end()) {
