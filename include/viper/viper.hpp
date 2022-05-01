@@ -1786,7 +1786,7 @@ namespace viper {
     bool Viper<K, V>::Client::get(const K &key, V *value) {
         index::BTreeCare<uint64_t> *map = reinterpret_cast<index::BTreeCare<uint64_t> *>(this->viper_.map_);
         typename Viper<K, V>::Client::viper_iterator it = get_iterator(key);
-        std::cout << "AAA" << std::endl;
+        std::cout << "ABA" << std::endl;
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
