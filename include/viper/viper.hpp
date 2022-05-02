@@ -1790,7 +1790,7 @@ namespace viper {
         *value = *it;
         //typename Viper< K, V>::Client::viper_iterator temp = it.btree_it;//用temp定位it
 
-        int count=100000;
+        int count=10000000;
         for(int i=0;i<count&&it != get_end();i++){
             *it;
             ++it;//用Temp向右遍历
