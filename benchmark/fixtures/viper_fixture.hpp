@@ -124,7 +124,7 @@ void ViperFixture<KeyT, ValueT>::InitMap(uint64_t num_prefill_inserts, ViperConf
 // 2 alex
 // 3 pgm
 
-    int index_num=16;
+    int index_num=17;
 
     viper_ = ViperT::create(pool_file_, BM_POOL_SIZE,index_num, v_config);
     if(index_num==1){
@@ -159,6 +159,8 @@ void ViperFixture<KeyT, ValueT>::InitMap(uint64_t num_prefill_inserts, ViperConf
         index_type="art";
     }else if(index_num==16){
         index_type="lipp";
+    }else if(index_num==17){
+        index_type="rmi";
     }
     this->prefill(num_prefill_inserts);
     viper_initialized_ = true;

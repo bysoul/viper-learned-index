@@ -702,6 +702,9 @@ namespace viper {
         }else if(index_type==16){
             map_=new index::DummyIndex<uint64_t>(index_type);
             std::cout<<"use lipp as index"<<std::endl;
+        }else if(index_type==17){
+            map_=new index::DummyIndex<uint64_t>(index_type);
+            std::cout<<"use rmi as index"<<std::endl;
         }
         current_block_page_ = 0;
         current_size_ = 0;

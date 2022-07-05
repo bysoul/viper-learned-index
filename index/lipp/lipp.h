@@ -67,17 +67,17 @@ class LIPP
     struct {
         long long fmcd_success_times = 0;
         long long fmcd_broken_times = 0;
-        #if COLLECT_TIME
+#if COLLECT_TIME
         double time_scan_and_destory_tree = 0;
         double time_build_tree_bulk = 0;
-        #endif
+#endif
     } stats;
 
 public:
     typedef std::pair<T, P> V;
 
     LIPP(double BUILD_LR_REMAIN = 0, bool QUIET = true)
-        : BUILD_LR_REMAIN(BUILD_LR_REMAIN), QUIET(QUIET) {
+            : BUILD_LR_REMAIN(BUILD_LR_REMAIN), QUIET(QUIET) {
         {
             std::vector<Node*> nodes;
             for (int _ = 0; _ < 1e7; _ ++) {
@@ -189,23 +189,34 @@ public:
             printf("Node(%p, a = %lf, b = %lf, num_items = %d)", node, node->model.a, node->model.b, node->num_items);
             printf("[");
             int first = 1;
+            int child_cnt = 0;
+            int none_cnt = 0;
+            int key_cnt = 0;
             for (int i = 0; i < node->num_items; i ++) {
                 if (!first) {
-                    printf(", ");
+                    // printf(", ");  // LLLLLLLLLLLLLLLOSK
                 }
                 first = 0;
                 if (BITMAP_GET(node->none_bitmap, i) == 1) {
-                    printf("None");
+                    none_cnt++;
+                    // printf("None"); // LLLLLLLLLLLLLLOSK
                 } else if (BITMAP_GET(node->child_bitmap, i) == 0) {
-                    std::stringstream s;
-                    s << node->items[i].comp.data.key;
-                    printf("Key(%s)", s.str().c_str());
+                    key_cnt++;
+                    // std::stringstream s;
+                    // s << node->items[i].comp.data.key;
+                    // printf("Key(%s)", s.str().c_str()); // LLLLLLLLLLLLLLLLLOSK
                 } else {
-                    printf("Child(%p)", node->items[i].comp.child);
-                    s.push(node->items[i].comp.child);
+                    child_cnt++;
+                    // printf("Child(%p)", node->items[i].comp.child);
+                    // printf("*, "); // LLLLLLLLLLLLLLLLLLLLOSK
+                    if(!node->items[i].comp.child->is_two) { // LLLLLLLLLLLLLLLLLLLLOSK
+                        // s.push(node->items[i].comp.child);  // LLLLLLLLLLLLOSK
+                    }
+
                 }
             }
             printf("]\n");
+            printf("Child_cnt:=%d, None_cnt:=%d, Key_cnt:=%d\n",child_cnt,none_cnt,key_cnt);
         }
     }
     void print_depth() const {
@@ -257,15 +268,15 @@ public:
             printf("\t fmcd_success_times = %lld\n", stats.fmcd_success_times);
             printf("\t fmcd_broken_times = %lld\n", stats.fmcd_broken_times);
         }
-        #if COLLECT_TIME
+#if COLLECT_TIME
         printf("\t time_scan_and_destory_tree = %lf\n", stats.time_scan_and_destory_tree);
         printf("\t time_build_tree_bulk = %lf\n", stats.time_build_tree_bulk);
-        #endif
+#endif
     }
     size_t index_size(bool total=false, bool ignore_child=true) const {
         std::stack<Node*> s;
         s.push(root);
-    
+
         size_t size = 0;
         while (!s.empty()) {
             Node* node = s.top(); s.pop();
@@ -320,7 +331,6 @@ private:
 
     Node* root;
     std::stack<Node*> pending_two;
-
     std::allocator<Node> node_allocator;
     Node* new_nodes(int n)
     {
@@ -380,6 +390,7 @@ private:
     /// build a tree with two keys
     Node* build_tree_two(T key1, P value1, T key2, P value2)
     {
+
         if (key1 > key2) {
             std::swap(key1, key2);
             std::swap(value1, value2);
@@ -411,6 +422,7 @@ private:
 
         const double mid1_target = node->num_items / 3;
         const double mid2_target = node->num_items * 2 / 3;
+
 
         node->model.a = (mid2_target - mid1_target) / (mid2_key - mid1_key);
         node->model.b = mid1_target - node->model.a * mid1_key;
@@ -534,6 +546,7 @@ private:
                         BITMAP_CLEAR(node->none_bitmap, item_i);
                         node->items[item_i].comp.data.key = keys[offset];
                         node->items[item_i].comp.data.value = values[offset];
+
                     } else {
                         // ASSERT(next - offset <= (size+2) / 3);
                         BITMAP_CLEAR(node->none_bitmap, item_i);
@@ -796,7 +809,7 @@ private:
 
     Node* insert_tree(Node* _node, const T& key, const P& value)
     {
-        constexpr int MAX_DEPTH = 128;
+        constexpr int MAX_DEPTH = 4096;
         Node* path[MAX_DEPTH];
         int path_size = 0;
         int insert_to_data = 0;
@@ -837,25 +850,25 @@ private:
                 T* keys = new T[ESIZE];
                 P* values = new P[ESIZE];
 
-                #if COLLECT_TIME
+#if COLLECT_TIME
                 auto start_time_scan = std::chrono::high_resolution_clock::now();
-                #endif
+#endif
                 scan_and_destory_tree(node, keys, values);
-                #if COLLECT_TIME
+#if COLLECT_TIME
                 auto end_time_scan = std::chrono::high_resolution_clock::now();
                 auto duration_scan = end_time_scan - start_time_scan;
                 stats.time_scan_and_destory_tree += std::chrono::duration_cast<std::chrono::nanoseconds>(duration_scan).count() * 1e-9;
-                #endif
+#endif
 
-                #if COLLECT_TIME
+#if COLLECT_TIME
                 auto start_time_build = std::chrono::high_resolution_clock::now();
-                #endif
+#endif
                 Node* new_node = build_tree_bulk(keys, values, ESIZE);
-                #if COLLECT_TIME
+#if COLLECT_TIME
                 auto end_time_build = std::chrono::high_resolution_clock::now();
                 auto duration_build = end_time_build - start_time_build;
                 stats.time_build_tree_bulk += std::chrono::duration_cast<std::chrono::nanoseconds>(duration_build).count() * 1e-9;
-                #endif
+#endif
 
                 delete[] keys;
                 delete[] values;

@@ -11,11 +11,11 @@ template <class T>
 class LinearModel
 {
 public:
-    double a = 0; // slope
+    long double a = 0; // slope // transfer to long double
     long double b = 0; // intercept
 
     LinearModel() = default;
-    LinearModel(double a, long double b) : a(a), b(b) {}
+    LinearModel(long double a, long double b) : a(a), b(b) {}
     explicit LinearModel(const LinearModel &other) : a(other.a), b(other.b) {}
 
     inline int predict(T key) const
