@@ -1,20 +1,10 @@
-<h1 align="center">An In-depth Inquiry into Learned Indexes in a Practical Environment [Experiment, Analysis & Benchmark]</h1>
+<h1 align="center">Cutting Learned Index into Pieces: An In-depth Inquiry into Updatable Learned Indexes</h1>
 
 ### Abstract
-The learned indexes, which introduce the artificial intelligence technology into the index design, have become a very popular research direction due to their benefits on both space and time overheads. Recently, numerous updatable learned indexes have been designed to support the writing requirements in practical systems, and the source codes of many proposed learned indexes have been opened.
-However, we do not find any practical database or storage system
-that has replaced traditional indexes with the new learned indexes;
-people still have a concern about whether learned indexes used in
-practical systems can behave as good as what were described in
-the research papers. Therefore, this paper makes a comprehensive
-and in-depth evaluation on the end-to-end performance of learned
-indexes in real environments. Furthermore, we deconstruct the design of learned indexes into multiple dimensions and evaluate their
-impacts on the overall performance, respectively. According to the
-above results and analyses, we give some constructive suggestions
-on how to design a better learned index.
+Recently, numerous high-performance updatable learned indexes have been designed to support the writing requirements in practical systems. Researchers have proposed various strategies to improve the availability of updatable learned indexes. However, it is unclear which strategy is more profitable. Therefore, we deconstruct the design of learned indexes into multiple dimensions and in-depth evaluate their impacts on the overall performance, respectively.  Through the in-depth exploration of learned indexes, we reckon that the approximation algorithm is the most crucial design dimension for improving the performance of the learned indexes rather than the popular works that focus on the learned index structure. Moreover, this paper makes a comprehensive end-to-end evaluation based on a high-performance key-value store to answer people’s concerns about which learned index is better and whether learned indexes can outperform traditional ones. Finally, according to end-to-end and in-depth evaluation results, we give some constructive suggestions on designing a better learned index in these dimensions, especially how to design an excellent approximate algorithm to improve the lookup and insertion performance of learned indexes.
 
 ### Authors
-Jiake Ge, Boyu Shi, Yanfeng Chai, Yunda Guo, Yinxuan He, and Yunpeng
+Jiake Ge, Boyu Shi, Yanfeng Chai, Yuanhui Luo, Yunda Guo, Yinxuan He, and Yunpeng
 Chai*. 
 
 ### How to run the benchmark for Learned Index
