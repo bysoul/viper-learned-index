@@ -59,38 +59,7 @@ typedef Result result_t;
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-inline void memory_fence() { asm volatile("mfence" : : : "memory"); }
 
-/** @brief Compiler fence.
- * Prevents reordering of loads and stores by the compiler. Not intended to
- * synchronize the processor's caches. */
-inline void fence() { asm volatile("" : : : "memory"); }
-
-/* 
- * lpf: expected is loaded into EXA, %2 = desired, %1 = obj
- *      if *obj==expected, then *obj = desired, re = expected
- *      if *obj!=expected, then EXA = *obj, re = EXA
- *    Expected in the function is modified, but won't change in the origin function
- */
-inline uint64_t cmpxchg(uint64_t *object, uint64_t expected,
-                               uint64_t desired) {
-  asm volatile("lock; cmpxchgq %2,%1"
-               : "+a"(expected), "+m"(*object)
-               : "r"(desired)
-               : "cc");
-  fence();
-  return expected;
-}
-
-inline uint8_t cmpxchgb(uint8_t *object, uint8_t expected,
-                               uint8_t desired) {
-  asm volatile("lock; cmpxchgb %2,%1"
-               : "+a"(expected), "+m"(*object)
-               : "r"(desired)
-               : "cc");
-  fence();
-  return expected;
-}
 
 // ========================= seach-schemes ====================
 

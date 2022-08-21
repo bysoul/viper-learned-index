@@ -40,12 +40,12 @@ void FINEdex<key_t, val_t>::train(const std::vector<key_t> &keys,
     size_t last_n = keys.size();
     auto build_level = [&](auto epsilon, auto in_fun, auto out_fun) -> size_t {
         lrmodel_type* lr = nullptr;
-        auto n_segments = make_segmentation_data(last_n, epsilon, in_fun, out_fun, lr);
+        auto n_segments = make_segmentation_data_new(last_n, epsilon, in_fun, out_fun, lr);
         return n_segments;
     };
 
     // Build first level
-    auto in_fun = [&](auto i) { return std::pair<key_t, size_t>(keys[i], i); };
+    auto in_fun = [&](auto i) { return std::tuple<key_t, size_t,val_type>(i,keys[i],vals[i]); };
     auto out_fun = [&](auto model, auto keys_begin, auto vals_begin, auto size, auto err) { 
         //aimodels.emplace_back(cs, nodetable);
         append_model(model, keys_begin, vals_begin, size, err);
@@ -55,6 +55,7 @@ void FINEdex<key_t, val_t>::train(const std::vector<key_t> &keys,
     //root = new root_type(model_keys);
     COUT_THIS("[aidle] get models -> "<< model_keys.size());
     assert(model_keys.size()==aimodels.size());
+    std::cout<<"========================000"<<std::endl;
 }
 
 

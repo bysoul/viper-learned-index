@@ -38,7 +38,8 @@ namespace aidel {
             valid_flag[i] = false;
         }
         for (int i = 0; i < size; i++) {
-            auto pos = floorl(*(keys_begin + i) * model->get_weight0() + model->get_weight1());
+            int pos = floorl(*(keys_begin + i) * model->get_weight0() + model->get_weight1());
+            std::cout<<"========================store pos"<<pos<<"key"<<*(keys_begin + i)<<"v"<<*(vals_begin + i)<<std::endl;
             keys[pos] = *(keys_begin + i);
             vals[pos] = *(vals_begin + i);
             valid_flag[pos] = true;
@@ -169,7 +170,12 @@ namespace aidel {
     template<class key_t, class val_t>
     result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val) {
         size_t pos = predict(key);
+        std::cout<<"========================get"<<std::endl;
+        std::cout<<"========================key"<<key<<std::endl;
+        std::cout<<"========================pos"<<pos<<std::endl;
+
         if (valid_flag[pos] && key == keys[pos]) {
+            std::cout<<"========================vals[pos]"<<vals[pos]<<std::endl;
             val = vals[pos];
             return result_t::ok;
         }

@@ -5,28 +5,29 @@
 #include <vector>
 #include <stdexcept>
 #include <type_traits>
+#include "function.h"
 
 /*template<typename T>
-using LargeSigned = typename std::conditional_t<std::is_floating_point_v<T>,
+using LargeSignedNew = typename std::conditional_t<std::is_floating_point_v<T>,
                                                 long double,
                                                 std::conditional_t<(sizeof(T) < 8), int64_t, __int128>>;*/
 
 template<typename T>
-using LargeSigned = __int128;
+using LargeSignedNew = __int128;
 
 
 template<typename X, typename Y>
-class OptimalPiecewiseLinearModel {
+class OptimalPiecewiseLinearModelNew {
 private:
-    using SX = LargeSigned<X>;
-    using SY = LargeSigned<Y>;
+    using SX = LargeSignedNew<X>;
+    using SY = LargeSignedNew<Y>;
 
     struct Slope {
         SX dx{0};
         SY dy{0};
 
         Slope multiTwo() const {
-            return Slope(dx, dy * 2);
+            return Slope{dx, dy * 2};
         }
 
         bool operator<(const Slope &p) const {
@@ -94,7 +95,6 @@ private:
     X last_x = 0;
     std::vector<Point> hull;
     Slope k;
-    long double intercept;
     const Y epsilon;
     Hull<false> lower;
     Hull<true> upper;
@@ -112,9 +112,9 @@ private:
 
 public:
 
-    class CanonicalSegment;
+    class CanonicalSegmentNew;
 
-    explicit OptimalPiecewiseLinearModel(Y epsilon) : epsilon(epsilon), lower(epsilon), upper(epsilon) {
+    explicit OptimalPiecewiseLinearModelNew(Y epsilon) : epsilon(epsilon), lower(epsilon), upper(epsilon) {
         if (epsilon < 0)
             throw std::invalid_argument("epsilon cannot be negative");
 
@@ -130,6 +130,8 @@ public:
         Point p{x, SY(y)};
         if (points_in_hull == 0) {
             first_x = x;
+            std::cout << "====================x" << x << std::endl;
+            std::cout << "====================y" << y << std::endl;
             hull.push_back(p);
             ++points_in_hull;
             return true;
@@ -137,10 +139,23 @@ public:
         if (points_in_hull == 1) {
             hull.push_back(p);
             k = hull[1] - hull[0];
-            intercept = y - (x - first_x) * static_cast<long double>(k);
+            std::cout << "====================k" << static_cast<long double>(k) << std::endl;
+            std::cout << "====================x" << x << std::endl;
+            std::cout << "====================y" << y << std::endl;
+            long long intercept = -(long long) first_x * static_cast<long double>(k);
+            std::cout << "====================intercept" << intercept << std::endl;
+            std::cout << "====================dx" << std::to_string((long long) k.dx - 0) << std::endl;
+            std::cout << "====================dy" << std::to_string((long long) k.dy - 0) << std::endl;
+
+            std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;
             ++points_in_hull;
             return true;
         }
+        std::cout << "====================k" << static_cast<long double>(k) << std::endl;
+        std::cout << "====================x" << x << std::endl;
+        std::cout << "====================y" << y << std::endl;
+        auto intercept = -(long long) first_x * static_cast<long double>(k);
+        std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;
         //floor double Y
         //todo opt
         auto diffY = floorl(static_cast<long double>(k) * x) - floorl(static_cast<long double>(k) * hull.back().x);
@@ -159,10 +174,13 @@ public:
         return false;
     }
 
-    CanonicalSegment get_segment() {
+    CanonicalSegmentNew get_segment() {
+        std::cout << "====================k" << static_cast<long double>(k) << std::endl;
+        std::cout << "====================cap" << hull.size() << std::endl;
+
         if (points_in_hull == 1)
-            return CanonicalSegment(Slope(), first_x);
-        return CanonicalSegment(k, first_x);
+            return CanonicalSegmentNew(Slope(), first_x);
+        return CanonicalSegmentNew(k, first_x);
     }
 
     void reset() {
@@ -172,21 +190,21 @@ public:
 };
 
 template<typename X, typename Y>
-class OptimalPiecewiseLinearModel<X, Y>::CanonicalSegment {
-    friend class OptimalPiecewiseLinearModel;
+class OptimalPiecewiseLinearModelNew<X, Y>::CanonicalSegmentNew {
+    friend class OptimalPiecewiseLinearModelNew;
 
     Slope k;
 
     Point rectangle[4];
     X first;
 
-    CanonicalSegment(const Slope &k, X first) : k(k), first(first) {};
+    CanonicalSegmentNew(const Slope &k, X first) : k(k), first(first) {};
 
-    CanonicalSegment(X first) : first(first) {};
+    CanonicalSegmentNew(X first) : first(first) {};
 
-    CanonicalSegment(const Point &p0, const Point &p1, X first) : rectangle{p0, p1, p0, p1}, first(first) {};
+    CanonicalSegmentNew(const Point &p0, const Point &p1, X first) : rectangle{p0, p1, p0, p1}, first(first) {};
 
-    CanonicalSegment(const Point (&rectangle)[4], X first)
+    CanonicalSegmentNew(const Point (&rectangle)[4], X first)
             : rectangle{rectangle[0], rectangle[1], rectangle[2], rectangle[3]}, first(first) {};
 
     bool one_point() const {
@@ -195,13 +213,13 @@ class OptimalPiecewiseLinearModel<X, Y>::CanonicalSegment {
 
 public:
 
-    CanonicalSegment() = default;
+    CanonicalSegmentNew() = default;
 
     X get_first_x() const {
         return first;
     }
 
-    CanonicalSegment copy(X x) const {
+    CanonicalSegmentNew copy(X x) const {
         auto c(*this);
         c.first = x;
         return c;
@@ -230,7 +248,7 @@ public:
         if (one_point())
             return {0, 0};
         auto slope = static_cast<long double>(k);
-        auto intercept = -origin * slope;
+        auto intercept = -(long long) origin * slope;
         return {slope, intercept};
     }
 
@@ -244,106 +262,63 @@ public:
     }
 };
 
-template<typename Fin, typename Fout>
-size_t make_segmentation(size_t n, size_t epsilon, Fin in, Fout out) {
-    if (n == 0)
-        return 0;
-
-    using X = typename std::invoke_result_t<Fin, size_t>::first_type;
-    using Y = typename std::invoke_result_t<Fin, size_t>::second_type;
-    size_t c = 0;
-    size_t start = 0;
-    auto p = in(0);
-
-    OptimalPiecewiseLinearModel<X, Y> opt(epsilon);
-    opt.add_point(p.first, p.second);
-
-    for (size_t i = 1; i < n; ++i) {
-        auto next_p = in(i);
-        if (i != start && next_p.first == p.first)
-            continue;
-        p = next_p;
-        if (!opt.add_point(p.first, p.second)) {
-            out(start, i, opt.get_segment());
-            start = i;
-            --i;
-            ++c;
-        }
-    }
-
-    out(start, n, opt.get_segment());
-    return ++c;
-}
-
-template<typename RandomIt>
-auto make_segmentation(RandomIt first, RandomIt last, size_t epsilon) {
-    using key_type = typename RandomIt::value_type;
-    using canonical_segment = typename OptimalPiecewiseLinearModel<key_type, size_t>::CanonicalSegment;
-    using pair_type = typename std::pair<key_type, size_t>;
-
-    size_t n = std::distance(first, last);
-    std::vector<canonical_segment> out;
-    out.reserve(epsilon > 0 ? n / (epsilon * epsilon) : n / 16);
-
-    auto in_fun = [first](auto i) { return pair_type(first[i], i); };
-    auto out_fun = [&out](auto, auto, auto cs) { out.push_back(cs); };
-    make_segmentation(n, epsilon, in_fun, out_fun);
-
-    return out;
-}
-
 
 template<typename Fin, typename Fout, typename lrmodel_type>
-size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, lrmodel_type *lrmodel) {
+size_t make_segmentation_data_new(size_t n, size_t epsilon, Fin in, Fout out, lrmodel_type *lrmodel) {
     if (n == 0)
         return 0;
 
-    using X = typename std::invoke_result_t<Fin, size_t>::first_type;
-    using Y = typename std::invoke_result_t<Fin, size_t>::second_type;
-    using canonical_segment = typename OptimalPiecewiseLinearModel<key_type, size_t>::CanonicalSegment;
+    using X = std::tuple_element_t<1, typename std::invoke_result_t<Fin, size_t>>;
+    using Y = std::tuple_element_t<0, typename std::invoke_result_t<Fin, size_t>>;
+    using Z = std::tuple_element_t<2, typename std::invoke_result_t<Fin, size_t>>;
+    using canonical_segment = typename OptimalPiecewiseLinearModelNew<key_type, size_t>::CanonicalSegmentNew;
     size_t c = 0;
     size_t start = 0;
     auto p = in(0);
 
-    OptimalPiecewiseLinearModel<X, Y> opt(epsilon);
-    opt.add_point(p.first, p.second);
+    OptimalPiecewiseLinearModelNew<X, Y> opt(epsilon);
+    opt.add_point(std::get<1>(p), std::get<0>(p));
     std::vector<X> keys;
-    keys.push_back(p.first);
+    std::vector<Z> vals;
+    std::cout<<"zzz"<<std::get<1>(p)<<std::endl;
+    std::cout<<"zzz"<<std::get<2>(p)<<std::endl;
+
+    keys.push_back(std::get<1>(p));
+    vals.push_back(std::get<2>(p));
 
     for (size_t i = 1; i < n; ++i) {
         auto next_p = in(i);
-        if (i != start && next_p.first == p.first)
+        if (i != start && std::get<1>(next_p) == std::get<1>(p))
             continue;
         p = next_p;
 
-        bool add_success = opt.add_point(p.first, p.second - start);  // alwayse start from 0 for each segment
-        if (add_success) keys.push_back(p.first);
-        else {
+        bool add_success = opt.add_point(std::get<1>(p),
+                                         std::get<0>(p) - start);  // alwayse start from 0 for each segment
+        if (add_success) {
+            keys.push_back(std::get<1>(p));
+            vals.push_back(std::get<2>(p));
+        } else {
             canonical_segment cs = opt.get_segment();
             auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
             lrmodel_type model(cs_slope, cs_intercept);
-            out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
+            out(model, keys.begin(), vals.begin(), keys.size(), epsilon);
             // alwayse start from 0 for each segment
             std::vector<X>().swap(keys);
+            std::vector<X>().swap(vals);
             assert(keys.size() == 0);
-            start = p.second;
+            start = std::get<0>(p);
             opt.reset();
-            opt.add_point(p.first, p.second - start);
-            keys.push_back(p.first);
+            opt.add_point(std::get<1>(p), std::get<0>(p) - start);
+            keys.push_back(std::get<1>(p));
+            vals.push_back(std::get<2>(p));
             ++c;
         }
-        /*if (!opt.add_point(p.first, p.second)) {
-            out(start, i, opt.get_segment());
-            start = i;
-            --i;
-            ++c;
-        }*/
     }
 
     //out(start, n, opt.get_segment());
     canonical_segment cs = opt.get_segment();
     auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
     lrmodel_type model(cs_slope, cs_intercept);
-    out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
+    out(model, keys.begin(), vals.begin(), keys.size(), epsilon);
     return ++c;
 }

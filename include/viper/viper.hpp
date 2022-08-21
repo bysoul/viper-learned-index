@@ -706,6 +706,10 @@ namespace viper {
             map_=new index::DummyIndex<uint64_t>(index_type);
             std::cout<<"use rmi as index"<<std::endl;
         }
+        else if(index_type==18){
+            map_=new index::DummyIndex<uint64_t>(index_type);
+            std::cout<<"use 505 as index"<<std::endl;
+        }
         current_block_page_ = 0;
         current_size_ = 0;
         reclaimable_ops_ = 0;

@@ -80,7 +80,7 @@ private:
     levelbin_type** levelbins = nullptr;
     model_or_bin_t** mobs = nullptr;
 
-    const size_t capacity;
+    size_t capacity;
 
 };
 

@@ -16,6 +16,7 @@ namespace viper::index {
         std::unordered_map<K, uint64_t> *map_c;
         Index505Care() {
             map = new aidel::FINEdex<K, uint64_t>();
+            map_c = new std::unordered_map<K, uint64_t>();
         }
 
         ~Index505Care() {
@@ -24,9 +25,11 @@ namespace viper::index {
 
         void bulk_load(std::vector<uint64_t> &ks, std::vector<uint64_t> &vs) {
             map->train(ks, vs, 64);
+            std::cout<<"========================111"<<std::endl;
             for(int i=0;i<ks.size();i++){
                 map_c->insert(std::pair<K, uint64_t>(ks[i],vs[i]));
             }
+            std::cout<<"========================111"<<std::endl;
         }
 
         KeyValueOffset CoreInsert(const K &k, KeyValueOffset o) {
@@ -35,10 +38,11 @@ namespace viper::index {
 
         KeyValueOffset CoreGet(const K &k) {
             uint64_t v = 0;
+            std::cout<<"========================get"<<std::endl;
             map->find(k, v);
-            if(v!=*map_c->find(k)){
+            if(v!=map_c->find(k)->second){
                 std::cout<<"========================fault"<<std::endl;
-                std::cout<<*map_c->find(k)<<" "<<v<<std::endl;
+                std::cout<<map_c->find(k)->second<<" "<<v<<std::endl;
             }
             return KeyValueOffset(v);
         }
