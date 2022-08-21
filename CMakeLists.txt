@@ -66,7 +66,7 @@ if (${VIPER_BUILD_PLAYGROUND})
 endif()
 
 # VIPER BENCHMARKS
-#add_subdirectory(benchmark )
+add_subdirectory(benchmark )
 #add_executable(a a.cpp)
 
-add_subdirectory(index-test)
+#add_subdirectory(index-test)
