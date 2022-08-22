@@ -30,26 +30,27 @@ namespace index505 {
         model = new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
         key_t end_key = *(keys_begin + size - 1);
         auto cap = floorl(end_key * model->get_weight0() + model->get_weight1()) + 1;
-        capacity = cap;
-        keys = (key_t *) malloc(sizeof(key_t) * cap);
-        vals = (val_t *) malloc(sizeof(val_t) * cap);
-        valid_flag = (bool *) malloc(sizeof(bool) * cap);
-        for (int i = 0; i < cap; i++) {
+        capacity = static_cast<size_t>(cap);
+        std::cout << "========================capacity " << capacity << std::endl;
+        keys = (key_t *) malloc(sizeof(key_t) * capacity);
+        vals = (val_t *) malloc(sizeof(val_t) * capacity);
+        valid_flag = (bool *) malloc(sizeof(bool) * capacity);
+        for (int i = 0; i < capacity; i++) {
             valid_flag[i] = false;
         }
         for (int i = 0; i < size; i++) {
-            int pos = floorl(*(keys_begin + i) * model->get_weight0() + model->get_weight1());
+            size_t pos = static_cast<size_t>(floorl(*(keys_begin + i) * model->get_weight0() + model->get_weight1()));
             //std::cout << "========================store pos" << pos << "key" << *(keys_begin + i) << "v"<< *(vals_begin + i) << std::endl;
             keys[pos] = *(keys_begin + i);
             vals[pos] = *(vals_begin + i);
             valid_flag[pos] = true;
         }
-        levelbins = (levelbin_type **) malloc(sizeof(levelbin_type * ) * (cap + 1));
-        for (int i = 0; i < cap + 1; i++) {
+        levelbins = (levelbin_type **) malloc(sizeof(levelbin_type * ) * (capacity + 1));
+        for (int i = 0; i < capacity + 1; i++) {
             levelbins[i] = nullptr;
         }
-        mobs = (model_or_bin_t **) malloc(sizeof(model_or_bin_t * ) * (cap + 1));
-        for (int i = 0; i < cap + 1; i++) {
+        mobs = (model_or_bin_t **) malloc(sizeof(model_or_bin_t * ) * (capacity + 1));
+        for (int i = 0; i < capacity + 1; i++) {
             mobs[i] = nullptr;
         }
     }

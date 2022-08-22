@@ -130,8 +130,8 @@ public:
         Point p{x, SY(y)};
         if (points_in_hull == 0) {
             first_x = x;
-            //std::cout << "====================x" << x << std::endl;
-            //std::cout << "====================y" << y << std::endl;
+            std::cout << "====================x" << x << std::endl;
+            std::cout << "====================y" << y << std::endl;
             hull.push_back(p);
             ++points_in_hull;
             return true;
@@ -140,6 +140,8 @@ public:
             hull.push_back(p);
             k = hull[1] - hull[0];
             std::cout << "====================k0 " << static_cast<long double>(k) << std::endl;
+            std::cout << "====================x" << x << std::endl;
+            std::cout << "====================y" << y << std::endl;
             /*std::cout << "====================k" << static_cast<long double>(k) << std::endl;
             std::cout << "====================x" << x << std::endl;
             std::cout << "====================y" << y << std::endl;
