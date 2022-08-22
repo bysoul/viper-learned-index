@@ -1,9 +1,9 @@
 #ifndef __LEVEL_BIN_CON_H__
 #define __LEVEL_BIN_CON_H__
 
-#include "util_.h"
+#include "util.h"
 
-namespace index505{
+namespace aidel{
 
 template<class _Key, class _Data, 
          class _Value = std::pair<_Key, _Data>,

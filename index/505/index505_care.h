@@ -12,15 +12,16 @@ namespace viper::index {
     template<typename K>
     class Index505Care : public BaseIndex<K> {
     public:
-        aidel::FINEdex<K, uint64_t> *map;
+        index505::FINEdex<K, uint64_t> *map;
         std::unordered_map<K, uint64_t> *map_c;
         Index505Care() {
-            map = new aidel::FINEdex<K, uint64_t>();
+            map = new index505::FINEdex<K, uint64_t>();
             map_c = new std::unordered_map<K, uint64_t>();
         }
 
         ~Index505Care() {
-
+            delete map;
+            delete map_c;
         }
 
         void bulk_load(std::vector<uint64_t> &ks, std::vector<uint64_t> &vs) {

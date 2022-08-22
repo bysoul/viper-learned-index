@@ -705,10 +705,12 @@ namespace viper {
         }else if(index_type==17){
             map_=new index::DummyIndex<uint64_t>(index_type);
             std::cout<<"use rmi as index"<<std::endl;
-        }
-        else if(index_type==18){
+        }else if(index_type==18){
             map_=new index::DummyIndex<uint64_t>(index_type);
             std::cout<<"use 505 as index"<<std::endl;
+        }else if(index_type==19){
+            map_=new index::DummyIndex<uint64_t>(index_type);
+            std::cout<<"use FINEdex as index"<<std::endl;
         }
         current_block_page_ = 0;
         current_size_ = 0;

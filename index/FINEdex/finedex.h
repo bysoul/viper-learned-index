@@ -1,30 +1,30 @@
-#ifndef __AIDEL_H__
-#define __AIDEL_H__
+#ifndef __FINEDEX_H__
+#define __FINEDEX_H__
 
 #include "util.h"
 #include "lr_model.h"
 #include "lr_model_impl.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-#include "piecewise_linear_model_new.h"
+#include "piecewise_linear_model.h"
 
 namespace aidel {
 
+
 template<class key_t, class val_t>
-class AIDEL{
+class FINEdex{
 public:
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
     typedef LinearRegressionModel<key_t> lrmodel_type;
     typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
-    //typedef aidel::LevelIndex<key_t> root_type;
+
 
 public:
-    inline AIDEL();
-    inline AIDEL(int _maxErr, int _learning_step, float _learning_rate);
-    ~AIDEL();
+    inline FINEdex();
+    inline FINEdex(int _maxErr, int _learning_step, float _learning_rate);
+    ~FINEdex();
     void train(const std::vector<key_t> &keys, const std::vector<val_t> &vals, size_t _maxErr);
     void train_opt(const std::vector<key_t> &keys, const std::vector<val_t> &vals, size_t _maxErr);
-    //void retrain(typename root_type::iterator it);
     void print_models();
     void self_check();
     
@@ -38,9 +38,6 @@ public:
 
 
 private:
-    size_t backward_train(const typename std::vector<key_t>::const_iterator &keys_begin,
-                          const typename std::vector<val_t>::const_iterator &vals_begin, 
-                          uint32_t size, int step);
     void append_model(lrmodel_type &model, const typename std::vector<key_t>::const_iterator &keys_begin, 
                       const typename std::vector<val_t>::const_iterator &vals_begin, 
                       size_t size, int err);

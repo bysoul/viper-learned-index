@@ -124,7 +124,7 @@ void ViperFixture<KeyT, ValueT>::InitMap(uint64_t num_prefill_inserts, ViperConf
 // 2 alex
 // 3 pgm
 
-    int index_num=18;
+    int index_num=19;
 
     viper_ = ViperT::create(pool_file_, BM_POOL_SIZE,index_num, v_config);
     if(index_num==1){
@@ -163,6 +163,8 @@ void ViperFixture<KeyT, ValueT>::InitMap(uint64_t num_prefill_inserts, ViperConf
         index_type="rmi";
     }else if(index_num==18){
         index_type="505";
+    }else if(index_num==19){
+        index_type="FINEdex";
     }
     this->prefill(num_prefill_inserts);
     viper_initialized_ = true;

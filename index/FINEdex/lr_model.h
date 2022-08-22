@@ -5,7 +5,7 @@
 #include "mkl_lapacke.h"
 #include <array>
 #include <vector>
-#include "util_.h"
+#include "util.h"
 
 
 template <class key_t>

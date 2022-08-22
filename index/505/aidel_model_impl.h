@@ -1,10 +1,10 @@
-#ifndef __AIDEL_MODEL_IMPL_H__
-#define __AIDEL_MODEL_IMPL_H__
+#ifndef __505_MODEL_IMPL_H__
+#define __505_MODEL_IMPL_H__
 
 #include "aidel_model.h"
-#include "util.h"
+#include "util_.h"
 
-namespace aidel {
+namespace index505 {
 
     template<class key_t, class val_t>
     AidelModel<key_t, val_t>::AidelModel() {

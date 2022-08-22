@@ -21,6 +21,7 @@
 #include "lipp/lipp_care.hpp"
 #include "RMI/rmi_care.h"
 #include "505/index505_care.h"
+#include "FINEdex/FINEdex_care.h"
 
 namespace viper::index {
     template<typename K>
@@ -197,6 +198,21 @@ namespace viper::index {
                 std::chrono::high_resolution_clock::time_point start= std::chrono::high_resolution_clock::now();
 
                 auto p=new Index505Care<uint64_t>{};
+                p->bulk_load(ks,vs);
+                const auto end = std::chrono::high_resolution_clock::now();
+                const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                hdr_record_value_atomic(bulk_hdr, duration.count());
+                return p;
+            }else if(index_type==19){
+                std::vector<uint64_t> ks;
+                std::vector<uint64_t> vs;
+                for(int x = 0; x < vector->size(); ++x)
+                {
+                    ks.push_back((*vector)[x].first);
+                    vs.push_back((*vector)[x].second.get_offset());
+                }
+                std::chrono::high_resolution_clock::time_point start= std::chrono::high_resolution_clock::now();
+                auto p=new FINEdexCare<uint64_t>{};
                 p->bulk_load(ks,vs);
                 const auto end = std::chrono::high_resolution_clock::now();
                 const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);

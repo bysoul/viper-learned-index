@@ -1,19 +1,19 @@
-#ifndef __505_MODEL_H__
-#define __505_MODEL_H__
+#ifndef __AIDEL_MODEL_H__
+#define __AIDEL_MODEL_H__
 
 #include "lr_model.h"
 #include "lr_model_impl.h"
 #include "level_bin_con.h"
-#include "util_.h"
+#include "util.h"
 
-namespace index505{
+namespace aidel{
 
 template<class key_t, class val_t>
 class AidelModel {
 public:
     typedef LinearRegressionModel<key_t> lrmodel_type;
-    typedef index505::LevelBinCon<key_t, val_t> levelbin_type;
-    typedef index505::AidelModel<key_t, val_t> aidelmodel_type;
+    typedef aidel::LevelBinCon<key_t, val_t> levelbin_type;
+    typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
 
     typedef struct model_or_bin {
         typedef union pointer{
@@ -80,7 +80,7 @@ private:
     levelbin_type** levelbins = nullptr;
     model_or_bin_t** mobs = nullptr;
 
-    size_t capacity;
+    const size_t capacity;
 
 };
 

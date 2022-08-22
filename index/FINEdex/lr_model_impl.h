@@ -2,7 +2,7 @@
 #define __LR_MODEL_IMPL_H__
 
 #include "lr_model.h"
-#include "util_.h"
+#include "util.h"
 
 
 template<class key_t>
