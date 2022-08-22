@@ -9,8 +9,55 @@ namespace index505 {
     template<class key_t>
     class LinearRegressionModel {
 
+    private:
+        template<typename T>
+        using LargeSignedNew = __int128;
+        using SX = LargeSignedNew<key_t>;
+        using SY = LargeSignedNew<size_t>;
+        struct Slope {
+            SX dx{0};
+            SY dy{0};
+
+            Slope multiTwo() const {
+                return Slope{dx, dy * 2};
+            }
+
+            bool operator<(const Slope &p) const {
+                return dy * p.dx < dx * p.dy;
+            }
+
+            bool operator>(const Slope &p) const {
+                return dy * p.dx > dx * p.dy;
+            }
+
+            bool operator==(const Slope &p) const {
+                return dy * p.dx == dx * p.dy;
+            }
+
+            bool operator<=(const Slope &p) const {
+                return dy * p.dx <= dx * p.dy;
+            }
+
+            bool operator!=(const Slope &p) const {
+                return dy * p.dx != dx * p.dy;
+            }
+
+            explicit operator long double() const {
+                return dy / (long double) dx;
+            }
+        };
+
+        struct Point {
+            key_t x{};
+            SY y{};
+
+            Slope operator-(const Point &p) const {
+                return {SX(x) - p.x, y - p.y};
+            }
+        };
 
     public:
+
         inline LinearRegressionModel();
 
         inline LinearRegressionModel(long double w, long double b);

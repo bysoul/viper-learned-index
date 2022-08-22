@@ -5,6 +5,7 @@
 #include "util_.h"
 
 namespace index505 {
+
     template<class key_t>
     inline LinearRegressionModel<key_t>::LinearRegressionModel() {}
 
@@ -34,13 +35,8 @@ namespace index505 {
     void LinearRegressionModel<key_t>::train(const std::vector<key_t> &keys,
                                              const std::vector<size_t> &positions) {
         assert(keys.size() == positions.size());
-        if (keys.size() == 0) return;
 
-        std::vector<double> model_keys(keys.size());
-        std::vector<double *> key_ptrs(keys.size());
-        for (size_t i = 0; i < keys.size(); i++) {
-            model_keys[i] = keys[i];
-        }
+        if (keys.size() == 0) return;
 
         if (positions.size() == 0) return;
         if (positions.size() == 1) {
@@ -48,31 +44,22 @@ namespace index505 {
             weights[1] = positions[0];
             return;
         }
-        // use multiple dimension LR when running tpc-c
-        double x_expected = 0, y_expected = 0, xy_expected = 0,
-                x_square_expected = 0;
-        for (size_t key_i = 0; key_i < positions.size(); key_i++) {
-            double key = model_keys[key_i];
-            x_expected += key;
-            y_expected += positions[key_i];
-            x_square_expected += key * key;
-            xy_expected += key * positions[key_i];
+        Point start{keys[0], 0};
+        Point p{keys[1], 0};
+        auto k = p - start;
+        for (int i = 2; i < positions.size(); i++) {
+            //todo opt
+            auto diffY = floorl(static_cast<long double>(k) * keys[i]) - floorl(static_cast<long double>(k) * keys[i-1]);
+            if (diffY >= 1) {
+                continue;
+            }
+            k = Point{keys[i],i} - Point{keys[i-1],i-1};
         }
-        assert(x_expected > 0);
-        assert(y_expected > 0);
-        assert(x_square_expected > 0);
-        assert(xy_expected > 0);
-
-        x_expected /= positions.size();
-        y_expected /= positions.size();
-        x_square_expected /= positions.size();
-        xy_expected /= positions.size();
-
-        weights[0] = (xy_expected - x_expected * y_expected) /
-                     (x_square_expected - x_expected * x_expected);
-        weights[1] = (x_square_expected * y_expected - x_expected * xy_expected) /
-                     (x_square_expected - x_expected * x_expected);
-        maxErr = max_error(keys, positions);
+        long double slope = static_cast<long double>(k);
+        weights[0]=slope;
+        weights[1]=1-(long long) start.x * slope;
+        maxErr=0;
+        //maxErr = max_error(keys, positions);
     }
 
     template<class key_t>
