@@ -16,7 +16,7 @@ class FINEdex{
 public:
     typedef index505::AidelModel<key_t, val_t> aidelmodel_type;
     typedef LinearRegressionModel<key_t> lrmodel_type;
-    typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
+    typedef typename OptimalPiecewiseLinearModelNew<key_t, size_t>::CanonicalSegmentNew canonical_segment;
 
 
 public:

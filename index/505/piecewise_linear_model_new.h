@@ -139,7 +139,7 @@ public:
         if (points_in_hull == 1) {
             hull.push_back(p);
             k = hull[1] - hull[0];
-            std::cout << "====================k0" << static_cast<long double>(k) << std::endl;
+            std::cout << "====================k0 " << static_cast<long double>(k) << std::endl;
             /*std::cout << "====================k" << static_cast<long double>(k) << std::endl;
             std::cout << "====================x" << x << std::endl;
             std::cout << "====================y" << y << std::endl;
@@ -166,7 +166,7 @@ public:
             return true;
         }
         auto new_K = p - hull.back();
-        std::cout << "====================new_K" << static_cast<long double>(new_K) << std::endl;
+        std::cout << "====================new_K " << static_cast<long double>(new_K) << std::endl;
         if (new_K <= k.multiTwo()) {
             k = new_K;
             hull.push_back(p);
@@ -177,8 +177,8 @@ public:
     }
 
     CanonicalSegmentNew get_segment() {
-        std::cout << "====================k" << static_cast<long double>(k) << std::endl;
-        std::cout << "====================cap" << hull.size() << std::endl;
+        std::cout << "====================k " << static_cast<long double>(k) << std::endl;
+        std::cout << "====================cap " << hull.size() << std::endl;
 
         if (points_in_hull == 1)
             return CanonicalSegmentNew(Slope(), first_x);
@@ -282,8 +282,6 @@ size_t make_segmentation_data_new(size_t n, size_t epsilon, Fin in, Fout out, lr
     opt.add_point(std::get<1>(p), std::get<0>(p));
     std::vector<X> keys;
     std::vector<Z> vals;
-    std::cout<<"zzz"<<std::get<1>(p)<<std::endl;
-    std::cout<<"zzz"<<std::get<2>(p)<<std::endl;
 
     keys.push_back(std::get<1>(p));
     vals.push_back(std::get<2>(p));

@@ -1,8 +1,6 @@
 #ifndef __LR_MODEL_H___
 #define __LR_MODEL_H___
 
-#include "mkl.h"
-#include "mkl_lapacke.h"
 #include <array>
 #include <vector>
 #include "util_.h"

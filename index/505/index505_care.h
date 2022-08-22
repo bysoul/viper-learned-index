@@ -7,6 +7,7 @@
 
 #include "finedex.h"
 #include "finedex_impl.h"
+#include "../common_index.hpp"
 
 namespace viper::index {
     template<typename K>
