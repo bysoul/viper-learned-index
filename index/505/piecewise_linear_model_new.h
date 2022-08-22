@@ -130,8 +130,8 @@ public:
         Point p{x, SY(y)};
         if (points_in_hull == 0) {
             first_x = x;
-            std::cout << "====================x" << x << std::endl;
-            std::cout << "====================y" << y << std::endl;
+            //std::cout << "====================x" << x << std::endl;
+            //std::cout << "====================y" << y << std::endl;
             hull.push_back(p);
             ++points_in_hull;
             return true;
@@ -139,7 +139,8 @@ public:
         if (points_in_hull == 1) {
             hull.push_back(p);
             k = hull[1] - hull[0];
-            std::cout << "====================k" << static_cast<long double>(k) << std::endl;
+            std::cout << "====================k0" << static_cast<long double>(k) << std::endl;
+            /*std::cout << "====================k" << static_cast<long double>(k) << std::endl;
             std::cout << "====================x" << x << std::endl;
             std::cout << "====================y" << y << std::endl;
             long long intercept = -(long long) first_x * static_cast<long double>(k);
@@ -147,15 +148,15 @@ public:
             std::cout << "====================dx" << std::to_string((long long) k.dx - 0) << std::endl;
             std::cout << "====================dy" << std::to_string((long long) k.dy - 0) << std::endl;
 
-            std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;
+            std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;*/
             ++points_in_hull;
             return true;
         }
-        std::cout << "====================k" << static_cast<long double>(k) << std::endl;
+        /*std::cout << "====================k" << static_cast<long double>(k) << std::endl;
         std::cout << "====================x" << x << std::endl;
         std::cout << "====================y" << y << std::endl;
         auto intercept = -(long long) first_x * static_cast<long double>(k);
-        std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;
+        std::cout << "====================p" << (static_cast<long double>(k) * x) + intercept << std::endl;*/
         //floor double Y
         //todo opt
         auto diffY = floorl(static_cast<long double>(k) * x) - floorl(static_cast<long double>(k) * hull.back().x);
@@ -165,6 +166,7 @@ public:
             return true;
         }
         auto new_K = p - hull.back();
+        std::cout << "====================new_K" << static_cast<long double>(new_K) << std::endl;
         if (new_K <= k.multiTwo()) {
             k = new_K;
             hull.push_back(p);
@@ -247,8 +249,8 @@ public:
     std::pair<long double, long double> get_floating_point_segment(const X &origin) const {
         if (one_point())
             return {0, 0};
-        auto slope = static_cast<long double>(k);
-        auto intercept = -(long long) origin * slope;
+        long double slope = static_cast<long double>(k);
+        long double intercept = 1-(long long) origin * slope;
         return {slope, intercept};
     }
 

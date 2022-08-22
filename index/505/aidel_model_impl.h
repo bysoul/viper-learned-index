@@ -29,7 +29,7 @@ namespace index505 {
                                          size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(0) {
         model = new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
         key_t end_key = *(keys_begin + size - 1);
-        auto cap = end_key * model->get_weight0() + model->get_weight1() + 1;
+        auto cap = floorl(end_key * model->get_weight0() + model->get_weight1()) + 1;
         capacity = cap;
         keys = (key_t *) malloc(sizeof(key_t) * cap);
         vals = (val_t *) malloc(sizeof(val_t) * cap);
@@ -39,7 +39,7 @@ namespace index505 {
         }
         for (int i = 0; i < size; i++) {
             int pos = floorl(*(keys_begin + i) * model->get_weight0() + model->get_weight1());
-            std::cout<<"========================store pos"<<pos<<"key"<<*(keys_begin + i)<<"v"<<*(vals_begin + i)<<std::endl;
+            //std::cout << "========================store pos" << pos << "key" << *(keys_begin + i) << "v"<< *(vals_begin + i) << std::endl;
             keys[pos] = *(keys_begin + i);
             vals[pos] = *(vals_begin + i);
             valid_flag[pos] = true;
@@ -170,38 +170,34 @@ namespace index505 {
     template<class key_t, class val_t>
     result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val) {
         size_t pos = predict(key);
-        std::cout<<"========================get"<<std::endl;
-        std::cout<<"========================key"<<key<<std::endl;
-        std::cout<<"========================pos"<<pos<<std::endl;
+        /*std::cout << "========================get" << std::endl;
+        std::cout << "========================key" << key << std::endl;
+        std::cout << "========================pos" << pos << std::endl;*/
 
-        if (valid_flag[pos] && key == keys[pos]) {
-            std::cout<<"========================vals[pos]"<<vals[pos]<<std::endl;
+        //todo logic of delete
+        if(!valid_flag[pos]){
+            std::cout << "========================find fails1 key:"  << key<<" "<<pos<<" "<<vals[pos]<< std::endl;
+            return result_t::failed;
+        }
+        if (key == keys[pos]) {
+            //std::cout << "========================vals[pos]" << vals[pos] << std::endl;
             val = vals[pos];
             return result_t::ok;
         }
-        pos = locate_in_levelbin(key, pos);
-        if (key == keys[pos]) {
-            if (valid_flag[pos]) {
-                val = vals[pos];
-                return result_t::ok;
-            }
-            return result_t::failed;
+        size_t bin_pos = pos;
+        if (keys[pos] < key) {
+            bin_pos++;
         }
-        int bin_pos = key < keys[pos] ? pos : (pos + 1);
         memory_fence();
         model_or_bin_t *mob = mobs[bin_pos];
-        if (mob == nullptr) return result_t::failed;
+        if (mob == nullptr){
+            std::cout << "========================find fails2 key:"  << key<<" "<<pos<<" "<<vals[pos]<< std::endl;
+            return result_t::failed;}
 
         result_t res = result_t::failed;
         mob->lock();
         if (mob->isbin) {
             res = mob->mob.lb->con_find_retrain(key, val);
-            /*while(res == result_t::retrain) {
-                while(mob->locked == 1)
-                    ;
-                res = mob->mob.lb->con_find_retrain(key, val);
-            }
-            return res;*/
         } else {
             res = mob->mob.ai->con_find_retrain(key, val);
         }
@@ -401,19 +397,25 @@ inline size_t AidelModel<key_t, val_t>::find_lower_avx(const int64_t *arr, int n
     template<class key_t, class val_t>
     result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const val_t &val) {
         size_t pos = predict(key);
-        pos = locate_in_levelbin(key, pos);
-
-        if (key == keys[pos]) {
-            if (valid_flag[pos]) {
-                return result_t::failed;
-            } else {
-                valid_flag[pos] = true;
-                vals[pos] = val;
-                return result_t::ok;
-            }
+        /*std::cout << "========================insert" << std::endl;
+        std::cout << "========================key" << key << std::endl;
+        std::cout << "========================pos" << pos << std::endl;*/
+        if (!valid_flag[pos]) {
+            vals[pos] = val;
+            //std::cout << "========================insert ok" << vals[pos] << std::endl;
+            valid_flag[pos] = true;
+            return result_t::ok;
         }
-        int bin_pos = pos;
-        bin_pos = key < keys[bin_pos] ? bin_pos : (bin_pos + 1);
+        if (valid_flag[pos] && key == keys[pos]) {
+            std::cout << "========================insert fails" << vals[pos] << std::endl;
+            return result_t::failed;
+        }
+        size_t bin_pos = pos;
+        if (keys[pos] < key) {
+            bin_pos++;
+        }
+        //std::cout << "========================insert bin" << vals[pos] <<" "<<bin_pos<< std::endl;
+
         return insert_model_or_bin(key, val, bin_pos);
     }
 
